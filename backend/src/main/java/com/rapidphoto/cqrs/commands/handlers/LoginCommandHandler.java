@@ -52,6 +52,11 @@ public class LoginCommandHandler {
                     return Mono.error(new IllegalArgumentException("Invalid email or password"));
                 }
 
+                // Check if email is verified
+                if (!user.isEmailVerified()) {
+                    return Mono.error(new IllegalArgumentException("Please verify your email before logging in"));
+                }
+
                 // Record login timestamp
                 user.recordLogin();
 

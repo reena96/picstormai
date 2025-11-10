@@ -57,6 +57,7 @@ class LoginCommandHandlerTest {
         String email = "test@example.com";
         String password = "password123";
         User user = User.create(Email.of(email), password, "Test User");
+        user.verifyEmail(); // Verify email so user can login
 
         LoginCommand command = new LoginCommand(email, password);
 
@@ -85,6 +86,7 @@ class LoginCommandHandlerTest {
         // Given
         String email = "test@example.com";
         User user = User.create(Email.of(email), "correctPassword", "Test User");
+        user.verifyEmail(); // Verify email so we test password validation, not email verification
 
         LoginCommand command = new LoginCommand(email, "wrongPassword");
 
@@ -123,6 +125,33 @@ class LoginCommandHandlerTest {
             )
             .verify();
 
+        verify(refreshTokenRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldBlockUnverifiedEmailUsers() {
+        // Given
+        String email = "unverified@example.com";
+        String password = "Password123";
+        User user = User.create(Email.of(email), password, "Unverified User");
+        // User is NOT verified (emailVerified = false by default)
+
+        LoginCommand command = new LoginCommand(email, password);
+
+        when(userRepository.findByEmail(email)).thenReturn(Mono.just(user));
+
+        // When
+        Mono<LoginResponse> result = handler.handle(command);
+
+        // Then
+        StepVerifier.create(result)
+            .expectErrorMatches(throwable ->
+                throwable instanceof IllegalArgumentException &&
+                throwable.getMessage().contains("Please verify your email")
+            )
+            .verify();
+
+        verify(userRepository, never()).save(any());
         verify(refreshTokenRepository, never()).save(any());
     }
 }

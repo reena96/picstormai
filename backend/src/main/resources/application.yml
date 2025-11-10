@@ -40,6 +40,12 @@ aws:
   accessKeyId: ${AWS_ACCESS_KEY_ID:}
   secretAccessKey: ${AWS_SECRET_ACCESS_KEY:}
 
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:default-secret-change-me-in-production}
+  access-token-expiration-minutes: 15
+  refresh-token-expiration-days: 30
+
 # Spring Boot Actuator
 management:
   endpoints:

@@ -14,7 +14,7 @@ stories:
 
   - id: "0.2"
     name: "Database Schema & Migrations"
-    status: "backlog"
+    status: "review"
     assigned_to: "agent_a_backend"
     dependencies: ["0.1"]
 

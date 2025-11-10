@@ -1,0 +1,153 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>0</epicId>
+    <storyId>2</storyId>
+    <title>Database Schema & Migrations</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-09</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/0-2-database-schema-migrations.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>backend developer</asA>
+    <iWant>to define the complete database schema using Flyway migrations</iWant>
+    <soThat>the data model supports all application features with referential integrity</soThat>
+    <tasks>
+      - Task 1: Setup Flyway Migration Framework (AC: #10)
+      - Task 2: Create Core User Tables Migration (AC: #1, #2, #7, #9)
+      - Task 3: Create Upload Domain Tables Migration (AC: #3, #4, #9)
+      - Task 4: Create Tagging Tables Migration (AC: #5, #6, #9)
+      - Task 5: Add Performance Indexes Migration (AC: #8)
+      - Task 6: Validation and Testing (AC: #10)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. Users Table: users table with email, password_hash, display_name, email_verified created
+    2. User Preferences Table: user_preferences table with animations, sound, theme, concurrent_uploads created
+    3. Upload Sessions Table: upload_sessions table with user_id, status, total_photos, progress created
+    4. Photos Table: photos table with user_id, session_id, filename, s3_key, upload_status, progress created
+    5. Tags Table: tags table with user_id, name, color created
+    6. Photo Tags Table: photo_tags many-to-many relationship table created
+    7. Refresh Tokens Table: refresh_tokens table with token_hash, expires_at, revoked_at created
+    8. Indexes: Indexes added for common queries (user_id, session_id, tags)
+    9. Constraints: Foreign key constraints and check constraints enforced
+    10. Migration Validation: All Flyway migrations run successfully, schema verified in database
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD-RapidPhotoUpload.md</path>
+        <title>Product Requirements Document</title>
+        <section>9.5 Database Schema</section>
+        <snippet>Core tables: users, upload_sessions, uploads, photos, photo_tags. RDS PostgreSQL with indexed queries, JSONB metadata field for flexibility, soft delete support with deleted_at timestamp. Users table includes email (unique), password_hash, created_at. Upload_sessions tracks status (IN_PROGRESS, COMPLETED, FAILED), total_files, completed_files.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics/epic-0-foundation-infrastructure.md</path>
+        <title>Epic 0: Foundation & Infrastructure</title>
+        <section>Story 0.2: Database Schema & Migrations</section>
+        <snippet>Define complete database schema using Flyway migrations. Tables: users, user_preferences, upload_sessions, photos, tags, photo_tags, refresh_tokens. Use Flyway (V1__, V2__, etc.), add indexes for common queries, enforce foreign key constraints, add check constraints (email format, status enums). Test foreign key constraints, unique constraints, 10K photo inserts and queries.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/0-1-aws-infrastructure-setup.md</path>
+        <title>Story 0.1: AWS Infrastructure Setup (Previous Story)</title>
+        <section>Completion Notes</section>
+        <snippet>RDS PostgreSQL 15.4 provisioned with encryption at rest, automated backups (7-day retention dev, 30-day prod), Multi-AZ for prod. Database credentials auto-generated and stored in AWS Secrets Manager. Connection endpoint available via CDK stack outputs: DatabaseEndpoint, DatabaseSecretArn.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>infrastructure/cdk/lib/rapidphoto-stack.ts</path>
+        <kind>CDK Stack Definition</kind>
+        <symbol>RDS Configuration</symbol>
+        <lines>90-143</lines>
+        <reason>Defines RDS PostgreSQL 15.4 database configuration. Database name: rapidphoto, credentials in Secrets Manager, security group configured for EC2 access only.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <java>
+        <package>org.flywaydb:flyway-core</package>
+        <purpose>Database migration framework for versioned schema evolution</purpose>
+      </java>
+      <java>
+        <package>org.springframework.boot:spring-boot-starter-data-r2dbc</package>
+        <purpose>Reactive database access for Spring WebFlux</purpose>
+      </java>
+      <java>
+        <package>org.postgresql:r2dbc-postgresql</package>
+        <purpose>Reactive PostgreSQL driver for R2DBC</purpose>
+      </java>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - **Database**: Use PostgreSQL 15.x with Flyway for versioned migrations
+    - **Migration Naming**: Follow Flyway convention V{version}__{description}.sql (e.g., V1__create_users_tables.sql)
+    - **Primary Keys**: Use UUID type (gen_random_uuid()) for all primary keys (distributed systems, security)
+    - **Timestamps**: Use TIMESTAMP WITH TIME ZONE for all timestamp fields (multi-region support)
+    - **Soft Delete**: Use deleted_at timestamp field (nullable) for photos table to support undelete feature
+    - **JSONB Metadata**: Use JSONB type for photos.metadata field (flexible EXIF data without schema changes)
+    - **Enum Validation**: Use CHECK constraints for enum values (not PostgreSQL ENUM type for easier migration)
+    - **Foreign Keys**: Define with appropriate CASCADE rules (CASCADE for dependent data, RESTRICT for primary data)
+    - **Indexes**: Create composite indexes for common query patterns (user_id + created_at DESC for pagination)
+    - **Unique Constraints**: Enforce at database level (users.email, photos.s3_key, tags per user)
+    - **Check Constraints**: Validate data at database level (email format regex, value ranges, enum values)
+    - **Migration Immutability**: Once applied to production, migrations cannot be modified (create new undo migration instead)
+    - **Baseline on Migrate**: Enable for existing databases (flyway.baseline-on-migrate=true)
+    - **Dependency**: Requires Story 0.1 complete (RDS PostgreSQL provisioned)
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Flyway Configuration Properties</name>
+      <kind>Spring Boot application.yml</kind>
+      <signature>
+        spring.flyway.enabled: true
+        spring.flyway.locations: classpath:db/migration
+        spring.flyway.baseline-on-migrate: true
+        spring.flyway.validate-on-migrate: true
+        spring.flyway.out-of-order: false
+      </signature>
+      <path>src/main/resources/application.yml</path>
+    </interface>
+    <interface>
+      <name>Database Connection Configuration</name>
+      <kind>Spring Boot R2DBC Configuration</kind>
+      <signature>
+        spring.r2dbc.url: r2dbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+        spring.r2dbc.username: ${DB_USERNAME} (from Secrets Manager)
+        spring.r2dbc.password: ${DB_PASSWORD} (from Secrets Manager)
+      </signature>
+      <path>src/main/resources/application.yml</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Database migration testing for Spring Boot + Flyway:
+      - **Flyway Integration Test**: Use Testcontainers with PostgreSQL to run migrations on clean database
+      - **Schema Validation**: Query information_schema tables to verify columns, data types, constraints, indexes
+      - **Constraint Testing**: Attempt violations (duplicate email, invalid FK, out-of-range values) and verify proper errors
+      - **Performance Testing**: Insert 10,000 photos, query with pagination, verify execution time <100ms
+      - **Index Verification**: Use EXPLAIN ANALYZE to verify indexes used in query plans
+      - **Transaction Testing**: Verify ACID properties, rollback behavior
+      - **Migration Repeatability**: Run migrations multiple times, verify idempotent behavior
+    </standards>
+    <locations>
+      - src/main/resources/db/migration/ (migration SQL files)
+      - src/test/java/com/rapidphoto/migration/ (migration integration tests)
+      - Testcontainers PostgreSQL for isolated test database
+    </locations>
+    <ideas>
+      <idea ac="1,2,7">Test user tables migration (V1): Verify users, user_preferences, refresh_tokens tables created. Test unique constraint on users.email, foreign keys to users table.</idea>
+      <idea ac="3,4">Test upload tables migration (V2): Verify upload_sessions, photos tables created. Test foreign keys (photos → users, photos → upload_sessions), unique constraint on photos.s3_key.</idea>
+      <idea ac="5,6">Test tagging tables migration (V3): Verify tags, photo_tags tables created. Test composite primary key on photo_tags, unique constraint on tags (user_id, name), CASCADE delete behavior.</idea>
+      <idea ac="8">Test performance indexes migration (V4): Verify indexes created. Use EXPLAIN ANALYZE to confirm indexes used in common queries.</idea>
+      <idea ac="9">Test constraints: Attempt to insert duplicate email → verify error. Attempt to insert photo with non-existent user_id → verify FK error. Attempt to insert invalid email format → verify check constraint error.</idea>
+      <idea ac="10">Integration test: Run all migrations on Testcontainers PostgreSQL. Query information_schema to verify all tables, columns, indexes. Insert test data, query, verify results.</idea>
+      <idea ac="10">Performance test: Insert 10,000 photos with random user_ids. Query photos for specific user with pagination (LIMIT 50, OFFSET 0). Verify query time <100ms, verify index used.</idea>
+    </ideas>
+  </tests>
+</story-context>

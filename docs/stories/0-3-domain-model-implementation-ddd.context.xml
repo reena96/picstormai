@@ -1,0 +1,160 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>0</epicId>
+    <storyId>3</storyId>
+    <title>Domain Model Implementation (DDD)</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-09</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/0-3-domain-model-implementation-ddd.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>backend developer</asA>
+    <iWant>implement domain aggregates following DDD principles</iWant>
+    <soThat>business logic is encapsulated and protected</soThat>
+    <tasks>
+      - Create Value Objects (Email, PhotoId, S3Location) with immutability and validation
+      - Create User Aggregate Root with factory methods and business logic
+      - Create UploadSession Aggregate Root with progress calculations
+      - Create Photo Aggregate Root with lifecycle management
+      - Create Domain Events (UserRegisteredEvent, UploadCompletedEvent, PhotoUploadedEvent)
+      - Create R2DBC Repositories for aggregates
+      - Write unit and integration tests
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. User Aggregate Root: User aggregate with Email value object, UserPreferences entity, business methods (create, verifyEmail, recordLogin, checkPassword)
+    2. UploadSession Aggregate Root: UploadSession aggregate with SessionStatus enum, progress calculation methods (start, recordPhotoUploaded, complete, getProgressPercentage)
+    3. Photo Aggregate Root: Photo aggregate with PhotoId value object, S3Location value object, Tag associations, business methods (startUpload, updateProgress, completeUpload, failUpload, retry, addTag)
+    4. Value Objects: Email, PhotoId, S3Location value objects are immutable with validation
+    5. Domain Events: UserRegisteredEvent, UploadCompletedEvent, PhotoUploadedEvent created
+    6. Factory Methods: Factory methods for aggregate creation (User.create(), UploadSession.start(), Photo.initiate())
+    7. No Setters: Domain objects use business methods only, no public setters
+    8. Invariant Validation: Domain invariants enforced (email format, session status transitions, progress ranges)
+    9. Unit Tests: Unit tests for all business methods covering happy path and edge cases
+    10. Integration Tests: Integration test saving and retrieving aggregates from database using R2DBC repositories
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics/epic-0-foundation-infrastructure.md</path>
+        <title>Epic 0: Foundation & Infrastructure</title>
+        <section>Story 0.3: Domain Model Implementation (DDD)</section>
+        <snippet>Implement domain aggregates following DDD principles with User, UploadSession, and Photo aggregate roots. Use factory methods, value objects, and enforce invariants through business methods only.</snippet>
+      </doc>
+      <doc>
+        <path>docs/handoff/epic0_backend_handoff.md</path>
+        <title>Agent A - Epic 0 Backend Chain Handoff</title>
+        <section>Story 0.3 Planning</section>
+        <snippet>Story 0.3 requires implementing User aggregate root with Email value object, UploadSession aggregate root with progress calculations, Photo aggregate root with S3Location value object. Dependencies: Story 0.2 database schema.</snippet>
+      </doc>
+      <doc>
+        <path>backend/README.md</path>
+        <title>Backend Service Documentation</title>
+        <section>Project Structure</section>
+        <snippet>Spring Boot 3.2.0 WebFlux reactive backend with R2DBC PostgreSQL driver, Flyway migrations, UUID primary keys, JSONB metadata support.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <file>
+        <path>backend/src/main/java/com/rapidphoto/RapidPhotoApplication.java</path>
+        <kind>application</kind>
+        <symbol>RapidPhotoApplication</symbol>
+        <lines>1-20</lines>
+        <reason>Spring Boot main application class - domain packages will be created alongside this</reason>
+      </file>
+      <file>
+        <path>backend/src/main/resources/db/migration/V1__create_users_tables.sql</path>
+        <kind>migration</kind>
+        <symbol>users table schema</symbol>
+        <lines>1-80</lines>
+        <reason>Users table schema defines database structure for User aggregate (email, password_hash, display_name, email_verified)</reason>
+      </file>
+      <file>
+        <path>backend/src/main/resources/db/migration/V2__create_upload_tables.sql</path>
+        <kind>migration</kind>
+        <symbol>upload_sessions and photos tables schema</symbol>
+        <lines>1-95</lines>
+        <reason>Database schema for UploadSession and Photo aggregates with status enums, progress tracking, JSONB metadata</reason>
+      </file>
+      <file>
+        <path>backend/src/test/java/com/rapidphoto/migration/FlywayMigrationTest.java</path>
+        <kind>test</kind>
+        <symbol>FlywayMigrationTest</symbol>
+        <lines>1-200</lines>
+        <reason>Testcontainers integration test pattern to follow for domain aggregate integration tests</reason>
+      </file>
+    </code>
+    <dependencies>
+      <java>
+        <package name="org.springframework.boot:spring-boot-starter-webflux" version="3.2.0"/>
+        <package name="org.springframework.boot:spring-boot-starter-data-r2dbc" version="3.2.0"/>
+        <package name="org.postgresql:r2dbc-postgresql" version="(managed)"/>
+        <package name="org.springframework.boot:spring-boot-starter-validation" version="3.2.0"/>
+        <package name="org.springframework.security:spring-security-crypto" version="(managed)"/>
+        <package name="org.projectlombok:lombok" version="(managed)"/>
+        <package name="org.springframework.boot:spring-boot-starter-test" version="3.2.0"/>
+        <package name="io.projectreactor:reactor-test" version="(managed)"/>
+        <package name="org.testcontainers:postgresql" version="1.19.3"/>
+      </java>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - Domain-Driven Design: Aggregates must have single root, enforce invariants, use business methods only (no setters)
+    - Value Objects: Must be immutable (final fields, no setters), validate on construction, implement equals/hashCode
+    - Factory Methods: Use static factory methods for aggregate creation (User.create(), UploadSession.start())
+    - State Transitions: SessionStatus finite state machine (IN_PROGRESS -> COMPLETED/FAILED/CANCELLED only)
+    - Reactive Patterns: Use Mono&lt;T&gt; for single results, Flux&lt;T&gt; for collections in repositories
+    - R2DBC Repositories: Extend ReactiveCrudRepository, use @Table/@Id/@Column annotations for entity mapping
+    - Package Structure: domain/user, domain/upload, domain/photo, domain/events for organization
+    - Testing: Unit tests for domain logic (no database), integration tests with Testcontainers for repositories
+    - Validation: Email RFC 5322 regex, progress 0-100, concurrent uploads 1-10, password must be BCrypt hashed
+    - Database Schema Alignment: Domain entities must match existing Flyway migration schemas (V1, V2, V3, V4)
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>ReactiveCrudRepository</name>
+      <kind>Spring Data R2DBC interface</kind>
+      <signature>public interface UserRepository extends ReactiveCrudRepository&lt;User, UUID&gt;</signature>
+      <path>Spring Data R2DBC framework</path>
+    </interface>
+    <interface>
+      <name>ApplicationEventPublisher</name>
+      <kind>Spring Event Publishing</kind>
+      <signature>void publishEvent(DomainEvent event)</signature>
+      <path>Spring Framework</path>
+    </interface>
+    <interface>
+      <name>PasswordEncoder (BCrypt)</name>
+      <kind>Spring Security Crypto</kind>
+      <signature>String encode(String rawPassword); boolean matches(String raw, String encoded)</signature>
+      <path>org.springframework.security.crypto.password.PasswordEncoder</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Use JUnit 5 with Spring Boot Test framework. Unit tests should focus on domain logic in isolation without database dependencies. Integration tests use Testcontainers with PostgreSQL 15 image for repository operations. Follow reactive testing patterns with StepVerifier from reactor-test. Test invariant enforcement by asserting IllegalArgumentException for invalid state transitions. Use AssertJ for fluent assertions.
+    </standards>
+    <locations>
+      - backend/src/test/java/com/rapidphoto/domain/user/ (unit tests for User aggregate)
+      - backend/src/test/java/com/rapidphoto/domain/upload/ (unit tests for UploadSession aggregate)
+      - backend/src/test/java/com/rapidphoto/domain/photo/ (unit tests for Photo aggregate)
+      - backend/src/test/java/com/rapidphoto/domain/integration/ (integration tests for repositories)
+    </locations>
+    <ideas>
+      AC#1: Test User.create() validates email format, Test User.verifyEmail() changes emailVerified flag, Test User.checkPassword() with BCrypt
+      AC#2: Test UploadSession.start() initializes status IN_PROGRESS, Test getProgressPercentage() calculation, Test recordPhotoUploaded() increments counter
+      AC#3: Test Photo lifecycle (initiate -> startUpload -> updateProgress -> completeUpload), Test Photo.retry() from FAILED status, Test addTag() associations
+      AC#4: Test Email value object rejects invalid formats, Test PhotoId wraps UUID correctly, Test S3Location immutability
+      AC#5: Test domain events published from business methods (UserRegisteredEvent, UploadCompletedEvent)
+      AC#8: Test invalid email throws exception, Test SessionStatus invalid transitions throw exception, Test progress &lt; 0 or &gt; 100 throws exception
+      AC#10: Test UserRepository save/findById with Testcontainers, Test PhotoRepository custom queries, Test UploadSessionRepository findActiveSessionsByUserId
+    </ideas>
+  </tests>
+</story-context>

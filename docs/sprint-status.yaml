@@ -20,7 +20,7 @@ stories:
 
   - id: "0.3"
     name: "Domain Model Implementation (DDD)"
-    status: "backlog"
+    status: "review"
     assigned_to: "agent_a_backend"
     dependencies: ["0.2"]
 
@@ -32,7 +32,7 @@ stories:
 
   - id: "0.5"
     name: "Design System & Component Library"
-    status: "in-progress"
+    status: "review"
     assigned_to: "agent_b_frontend"
 
   - id: "0.6"

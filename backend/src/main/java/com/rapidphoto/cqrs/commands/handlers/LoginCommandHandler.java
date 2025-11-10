@@ -73,8 +73,9 @@ public class LoginCommandHandler {
                     jwtConfig.getRefreshTokenExpirationDays()
                 );
 
-                // Save user and refresh token
+                // Delete old refresh tokens and save new one (ensure only one active token per user)
                 return userRepository.save(user)
+                    .then(refreshTokenRepository.deleteByUserId(user.getId()))
                     .then(refreshTokenRepository.save(refreshTokenEntity))
                     .doOnSuccess(savedToken -> {
                         // Publish domain event

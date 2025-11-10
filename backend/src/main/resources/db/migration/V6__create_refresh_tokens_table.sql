@@ -3,7 +3,7 @@
 -- Refresh tokens are long-lived tokens (30 days) stored as BCrypt hash.
 -- Used for token rotation pattern - each refresh invalidates old token.
 
-CREATE TABLE refresh_tokens (
+CREATE TABLE IF NOT EXISTS refresh_tokens (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL,
     token_hash VARCHAR(255) NOT NULL,
@@ -18,10 +18,10 @@ CREATE TABLE refresh_tokens (
 );
 
 -- Index for finding tokens by user (useful for logout all devices)
-CREATE INDEX idx_refresh_tokens_user_id ON refresh_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id);
 
 -- Index for cleanup job (finding expired tokens)
-CREATE INDEX idx_refresh_tokens_expires_at ON refresh_tokens(expires_at);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires_at ON refresh_tokens(expires_at);
 
 -- Comments for documentation
 COMMENT ON TABLE refresh_tokens IS 'Stores BCrypt hashed refresh tokens for JWT authentication';

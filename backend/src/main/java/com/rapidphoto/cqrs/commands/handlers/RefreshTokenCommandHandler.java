@@ -90,8 +90,8 @@ public class RefreshTokenCommandHandler {
                             jwtConfig.getRefreshTokenExpirationDays()
                         );
 
-                        // Delete old refresh token and save new one
-                        return refreshTokenRepository.deleteById(matchingToken.getId())
+                        // Delete ALL refresh tokens for this user (ensure only one active token)
+                        return refreshTokenRepository.deleteByUserId(user.getId())
                             .then(refreshTokenRepository.save(newRefreshTokenEntity))
                             .doOnSuccess(savedToken -> {
                                 // Publish domain event

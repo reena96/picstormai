@@ -1,0 +1,278 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>6</storyId>
+    <title>Authentication Integration Tests</title>
+    <status>todo</status>
+    <generatedAt>2025-11-10</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-6-authentication-integration-tests.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>a QA engineer</asA>
+    <iWant>to validate complete authentication flows</iWant>
+    <soThat>all auth scenarios are tested end-to-end</soThat>
+    <tasks>
+- Task 1: Setup Integration Test Infrastructure
+  - Configure Spring Boot Test with Testcontainers
+  - Setup PostgreSQL test container
+  - Configure test application properties
+  - Create base integration test class
+
+- Task 2: Authentication Flow Integration Tests
+  - Test: Complete registration flow
+  - Test: Email verification flow
+  - Test: Login after verification
+  - Test: Login blocked for unverified users
+  - Test: Duplicate email rejection
+
+- Task 3: JWT Token Tests
+  - Test: JWT token structure and claims
+  - Test: Token validation
+  - Test: Token expiry (401 response)
+  - Test: Refresh token generation
+  - Test: Refresh token rotation
+
+- Task 4: Password Validation Tests
+  - Test: Weak password rejection
+  - Test: Strong password acceptance
+  - Test: Password validation error messages
+
+- Task 5: Token Lifecycle Tests
+  - Test: Logout clears tokens (client-side)
+  - Test: Expired access token refresh flow
+  - Test: Invalid refresh token rejection
+
+- Task 6: Security Tests (Optional - Basic)
+  - Test: SQL injection protection in login
+  - Test: XSS protection in registration
+  - Test: Unauthorized access returns 401
+
+- Task 7: Run All Tests
+  - Execute integration test suite
+  - Verify all tests pass
+  - Check test coverage
+
+- Task 8: Document Test Results
+  - Update story file with test results
+  - Create validation guide
+  - Document any known issues
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+**Given** authentication system is complete
+**When** I run integration tests
+**Then** all auth flows are validated
+
+### Test Coverage Requirements:
+
+1. **Registration → Email verification → Login** - Full user journey
+2. **JWT token generation and validation** - Token structure and claims
+3. **Refresh token rotation** - Token rotation on refresh
+4. **Login with unverified email (rejected)** - Email verification enforcement
+5. **Duplicate email registration (rejected)** - Email uniqueness
+6. **Weak password validation** - Password strength requirements
+7. **Logout revokes tokens** - Token cleanup (future: backend revocation)
+8. **Expired token returns 401** - Token expiry handling
+9. **Auto-refresh on 401 response** - Automatic token refresh
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics/epic-1-authentication-onboarding.md</path>
+        <title>Epic 1: Authentication & Onboarding</title>
+        <section>Story 1.1: JWT Authentication Backend</section>
+        <snippet>JWT-based authentication with access tokens (15min) and refresh tokens (30 days). Token rotation on use. BCrypt password hashing.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics/epic-1-authentication-onboarding.md</path>
+        <title>Epic 1: Authentication & Onboarding</title>
+        <section>Story 1.2: User Registration & Email Verification</section>
+        <snippet>Registration with email verification. Password validation: min 8 chars, uppercase, number. Token expires in 24 hours. Cannot login with unverified email.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ARCHITECTURE-BMAD.md</path>
+        <title>Technical Architecture</title>
+        <section>20. Testing Strategy</section>
+        <snippet>Test Pyramid: 75% unit tests, 20% integration tests, 5% E2E. Use Spring Boot Test with Testcontainers for integration tests. WebTestClient for reactive endpoint testing.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/0-6-infrastructure-integration-tests.md</path>
+        <title>Story 0.6: Infrastructure Integration Tests</title>
+        <section>Testcontainers Pattern</section>
+        <snippet>Use @Testcontainers annotation with @Container static for shared containers across tests. Containers start once before all tests.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/1-6-authentication-integration-tests.md</path>
+        <title>Story 1.6: Authentication Integration Tests</title>
+        <section>Dev Notes - Architecture Patterns</section>
+        <snippet>Use Spring Boot Test (@SpringBootTest), Testcontainers for PostgreSQL, WebTestClient for reactive endpoint testing, MockEmailService.</snippet>
+      </doc>
+      <doc>
+        <path>docs/validation/epic1_1.4_validation.md</path>
+        <title>Story 1.4 Validation Guide</title>
+        <section>Backend Tests</section>
+        <snippet>UpdateUserPreferencesCommandHandler: 100% coverage with 7 tests passing including validation tests.</snippet>
+      </doc>
+      <doc>
+        <path>docs/validation/epic1_1.5_validation.md</path>
+        <title>Story 1.5 Validation Guide</title>
+        <section>Backend Tests</section>
+        <snippet>UpdateUserFlagCommandHandler: 100% coverage. Tests for marking onboarding complete, idempotency, null userId, and user not found.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <file>
+        <path>backend/src/main/java/com/rapidphoto/api/AuthController.java</path>
+        <kind>controller</kind>
+        <symbol>AuthController</symbol>
+        <lines>1-162</lines>
+        <reason>Main authentication REST controller. Defines all auth endpoints to be tested: /register, /verify-email, /login, /refresh</reason>
+      </file>
+      <file>
+        <path>backend/src/main/java/com/rapidphoto/api/UserController.java</path>
+        <kind>controller</kind>
+        <symbol>UserController</symbol>
+        <lines>1-144</lines>
+        <reason>User profile and preferences controller. GET /api/user/profile endpoint needed for integration tests.</reason>
+      </file>
+      <file>
+        <path>backend/src/main/java/com/rapidphoto/cqrs/commands/handlers/RegisterUserCommandHandler.java</path>
+        <kind>handler</kind>
+        <symbol>RegisterUserCommandHandler</symbol>
+        <reason>Handles user registration. Tests should verify duplicate email rejection and password validation.</reason>
+      </file>
+      <file>
+        <path>backend/src/main/java/com/rapidphoto/cqrs/commands/handlers/LoginCommandHandler.java</path>
+        <kind>handler</kind>
+        <symbol>LoginCommandHandler</symbol>
+        <reason>Handles login. Tests should verify token generation, unverified user rejection, invalid credentials.</reason>
+      </file>
+      <file>
+        <path>backend/src/main/java/com/rapidphoto/cqrs/commands/handlers/RefreshTokenCommandHandler.java</path>
+        <kind>handler</kind>
+        <symbol>RefreshTokenCommandHandler</symbol>
+        <reason>Handles token refresh. Tests should verify token rotation and invalid token rejection.</reason>
+      </file>
+      <file>
+        <path>backend/src/main/java/com/rapidphoto/cqrs/commands/handlers/VerifyEmailCommandHandler.java</path>
+        <kind>handler</kind>
+        <symbol>VerifyEmailCommandHandler</symbol>
+        <reason>Handles email verification. Tests should verify complete registration flow.</reason>
+      </file>
+    </code>
+    <dependencies>
+      <backend>
+        <framework>Spring Boot 3.2.0</framework>
+        <framework>Spring WebFlux (Reactive)</framework>
+        <database>PostgreSQL with R2DBC</database>
+        <database>Flyway 9.22.3 for migrations</database>
+        <security>Spring Security + JWT (jjwt 0.12.5)</security>
+        <testing>spring-boot-starter-test</testing>
+        <testing>reactor-test</testing>
+        <testing>testcontainers:testcontainers:1.19.3</testing>
+        <testing>testcontainers:postgresql:1.19.3</testing>
+        <testing>testcontainers:junit-jupiter:1.19.3</testing>
+      </backend>
+      <frontend>
+        <framework>React Native for Web</framework>
+        <navigation>@react-navigation/native</navigation>
+        <http>axios with interceptors</http>
+        <storage>@react-native-async-storage/async-storage</storage>
+      </frontend>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Use @SpringBootTest with WebEnvironment.RANDOM_PORT for integration tests</constraint>
+    <constraint>Use @Testcontainers annotation with @Container static for shared PostgreSQL container</constraint>
+    <constraint>Use WebTestClient for reactive endpoint testing (injected via @Autowired)</constraint>
+    <constraint>Mock email service using MockEmailService (do not send real emails in tests)</constraint>
+    <constraint>Test real database interactions - no mocking of repository layer</constraint>
+    <constraint>Each test should be independent and clean up resources</constraint>
+    <constraint>Use @DynamicPropertySource to configure R2DBC connection to test container</constraint>
+    <constraint>Follow existing test patterns from Story 0.6 infrastructure tests</constraint>
+    <constraint>JWT validation: decode tokens, verify claims (sub, email, iat, exp), verify signature</constraint>
+    <constraint>Password validation: min 8 chars, uppercase, number (as per Story 1.2)</constraint>
+  </constraints>
+  <interfaces>
+    <api>
+      <name>POST /api/auth/register</name>
+      <kind>REST endpoint</kind>
+      <signature>RegisterRequest(email, password, displayName) → RegisterResponse(userId) | 201 Created | 409 Conflict | 400 Bad Request</signature>
+      <path>backend/src/main/java/com/rapidphoto/api/AuthController.java:53-75</path>
+    </api>
+    <api>
+      <name>GET /api/auth/verify-email?token={token}</name>
+      <kind>REST endpoint</kind>
+      <signature>token: String → Map("message") | 200 OK | 400 Bad Request</signature>
+      <path>backend/src/main/java/com/rapidphoto/api/AuthController.java:81-93</path>
+    </api>
+    <api>
+      <name>POST /api/auth/login</name>
+      <kind>REST endpoint</kind>
+      <signature>LoginRequest(email, password) → LoginResponse(accessToken, refreshToken, expiresIn, tokenType) | 200 OK | 401 Unauthorized</signature>
+      <path>backend/src/main/java/com/rapidphoto/api/AuthController.java:99-109</path>
+    </api>
+    <api>
+      <name>POST /api/auth/refresh</name>
+      <kind>REST endpoint</kind>
+      <signature>RefreshRequest(refreshToken) → RefreshTokenResponse(accessToken, refreshToken, expiresIn) | 200 OK | 401 Unauthorized</signature>
+      <path>backend/src/main/java/com/rapidphoto/api/AuthController.java:115-125</path>
+    </api>
+    <api>
+      <name>GET /api/user/profile</name>
+      <kind>REST endpoint (authenticated)</kind>
+      <signature>Authentication → UserDTO(id, email, displayName, emailVerified, hasSeenOnboarding, createdAt, lastLoginAt) | 200 OK | 404 Not Found</signature>
+      <path>backend/src/main/java/com/rapidphoto/api/UserController.java:97-107</path>
+    </api>
+  </interfaces>
+  <tests>
+    <standards>Follow Test Pyramid: 75% unit tests (already covered in previous stories), 20% integration tests (this story), 5% E2E. Use Spring Boot Test with @SpringBootTest and WebEnvironment.RANDOM_PORT. Use Testcontainers for PostgreSQL with @Container static for shared container lifecycle. Use WebTestClient for reactive endpoint testing with .exchange() and .expectStatus(). Use reactor-test StepVerifier for reactive assertions. Mock external services (email) but test real database and HTTP layer. Use AssertJ for fluent assertions.</standards>
+    <locations>
+      <location>backend/src/test/java/com/rapidphoto/integration/</location>
+      <location>backend/src/test/resources/application-test.yml</location>
+    </locations>
+    <ideas>
+      <test ac="1">
+        <id>AC1-FullRegistrationFlow</id>
+        <description>Test complete registration → verification → login flow. POST /register → Extract token from MockEmailService → GET /verify-email?token → POST /login → Verify tokens returned.</description>
+      </test>
+      <test ac="2">
+        <id>AC2-JWTValidation</id>
+        <description>Test JWT token structure and claims. Login → Decode accessToken → Verify claims (sub=userId, email, iat, exp) → Verify signature → Verify exp=15 minutes.</description>
+      </test>
+      <test ac="3">
+        <id>AC3-TokenRotation</id>
+        <description>Test refresh token rotation. Login → POST /refresh with refreshToken → Verify new tokens different from old → Try using old refreshToken → Expect 401.</description>
+      </test>
+      <test ac="4">
+        <id>AC4-UnverifiedUserRejected</id>
+        <description>Test login blocked for unverified users. POST /register → Skip verification → POST /login → Expect 401 with "Please verify your email".</description>
+      </test>
+      <test ac="5">
+        <id>AC5-DuplicateEmailRejected</id>
+        <description>Test duplicate email registration rejected. POST /register with email1 → POST /register with same email1 → Expect 409 Conflict.</description>
+      </test>
+      <test ac="6">
+        <id>AC6-WeakPasswordRejected</id>
+        <description>Test weak password validation. POST /register with weak password (no uppercase, no number, &lt;8 chars) → Expect 400 Bad Request.</description>
+      </test>
+      <test ac="7">
+        <id>AC7-LogoutClearsTokens</id>
+        <description>Frontend test only - logout clears AsyncStorage. Backend does not have logout endpoint (tokens are stateless). Future: backend revocation table.</description>
+      </test>
+      <test ac="8">
+        <id>AC8-ExpiredTokenReturns401</id>
+        <description>Test expired access token returns 401. Create token with 1-second expiry → Wait 2 seconds → GET /user/profile with expired token → Expect 401.</description>
+      </test>
+      <test ac="9">
+        <id>AC9-AutoRefreshOn401</id>
+        <description>Frontend test only - axios interceptor handles 401 and refreshes tokens automatically. Backend integration test: verify /refresh endpoint works correctly.</description>
+      </test>
+    </ideas>
+  </tests>
+</story-context>

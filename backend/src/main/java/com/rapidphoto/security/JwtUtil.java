@@ -37,6 +37,7 @@ public class JwtUtil {
     /**
      * Generate short-lived access token (15 minutes).
      * Contains user ID and email as claims.
+     * Includes jti (JWT ID) claim to ensure uniqueness.
      */
     public String generateAccessToken(UUID userId, String email) {
         Instant now = Instant.now();
@@ -45,6 +46,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .subject(userId.toString())
                 .claim("email", email)
+                .id(UUID.randomUUID().toString())  // Unique token ID
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiration))
                 .signWith(secretKey)
@@ -54,6 +56,7 @@ public class JwtUtil {
     /**
      * Generate long-lived refresh token (30 days).
      * Only contains user ID - minimal claims for security.
+     * Includes jti (JWT ID) claim to ensure uniqueness.
      */
     public String generateRefreshToken(UUID userId) {
         Instant now = Instant.now();
@@ -61,6 +64,7 @@ public class JwtUtil {
 
         return Jwts.builder()
                 .subject(userId.toString())
+                .id(UUID.randomUUID().toString())  // Unique token ID for rotation
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiration))
                 .signWith(secretKey)

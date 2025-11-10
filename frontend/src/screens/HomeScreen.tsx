@@ -9,7 +9,6 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/atoms/Button';
-import { Settings } from 'lucide-react-native';
 
 export const HomeScreen: React.FC = () => {
   const { theme } = useTheme();
@@ -68,7 +67,6 @@ export const HomeScreen: React.FC = () => {
             onPress={() => navigation.navigate('Settings' as never)}
             testID="settings-button"
           >
-            <Settings size={20} color={theme.colors.white} style={{ marginRight: theme.spacing[2] }} />
             Settings
           </Button>
 

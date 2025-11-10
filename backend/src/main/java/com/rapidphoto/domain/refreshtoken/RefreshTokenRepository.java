@@ -25,6 +25,7 @@ public interface RefreshTokenRepository extends ReactiveCrudRepository<RefreshTo
      * Delete all refresh tokens for a specific user.
      * Useful when user logs out from all devices.
      */
+    @Query("DELETE FROM refresh_tokens WHERE user_id = :userId")
     Mono<Void> deleteByUserId(UUID userId);
 
     /**

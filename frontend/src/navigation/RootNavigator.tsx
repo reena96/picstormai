@@ -51,12 +51,10 @@ export const RootNavigator: React.FC = () => {
         }}
       >
         {!isAuthenticated ? (
-          // Auth Stack
           <Stack.Group>
             <Stack.Screen name="Login" component={LoginScreen} />
           </Stack.Group>
         ) : shouldShowOnboarding ? (
-          // Onboarding Stack
           <Stack.Group>
             <Stack.Screen name="Onboarding">
               {() => (
@@ -68,7 +66,6 @@ export const RootNavigator: React.FC = () => {
             </Stack.Screen>
           </Stack.Group>
         ) : (
-          // Main Stack
           <Stack.Group>
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Settings" component={SettingsScreen} />

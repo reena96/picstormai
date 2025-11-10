@@ -1,6 +1,7 @@
 package com.rapidphoto.domain.user;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.UUID;
@@ -13,12 +14,29 @@ import java.util.UUID;
 public class UserPreferences {
 
     @Id
+    @Column("id")
+    private UUID id;
+
+    @Column("user_id")
     private UUID userId;
+
+    @Column("animations")
     private boolean animationsEnabled;
+
+    @Column("sound")
     private boolean soundEnabled;
+
+    @Column("theme")
     private Theme theme;
+
+    @Column("concurrent_uploads")
     private int concurrentUploads;
+
+    // These fields don't exist in DB yet - will default to false until migration added
+    @Column("upload_complete_notifications")
     private boolean uploadCompleteNotifications;
+
+    @Column("auto_retry_failed")
     private boolean autoRetryFailed;
 
     // Package-private constructor for persistence
@@ -93,6 +111,10 @@ public class UserPreferences {
     }
 
     // Getters
+
+    public UUID getId() {
+        return id;
+    }
 
     public UUID getUserId() {
         return userId;

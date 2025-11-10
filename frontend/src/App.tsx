@@ -5,14 +5,15 @@
  */
 
 import React from 'react';
+import { Platform } from 'react-native';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { RootNavigator } from './navigation/RootNavigator';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 
 const App: React.FC = () => {
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider initialMetrics={Platform.OS === 'web' ? initialWindowMetrics : undefined}>
       <ThemeProvider>
         <AuthProvider>
           <RootNavigator />

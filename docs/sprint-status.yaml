@@ -1,0 +1,48 @@
+# Sprint Status - EPIC 0: Foundation & Infrastructure
+
+epic:
+  id: 0
+  name: "Foundation & Infrastructure"
+  status: "in_progress"
+  started: "2025-11-09"
+
+stories:
+  - id: "0.1"
+    name: "AWS Infrastructure Setup"
+    status: "review"
+    assigned_to: "agent_a_backend"
+
+  - id: "0.2"
+    name: "Database Schema & Migrations"
+    status: "backlog"
+    assigned_to: "agent_a_backend"
+    dependencies: ["0.1"]
+
+  - id: "0.3"
+    name: "Domain Model Implementation (DDD)"
+    status: "backlog"
+    assigned_to: "agent_a_backend"
+    dependencies: ["0.2"]
+
+  - id: "0.4"
+    name: "CQRS Structure Setup"
+    status: "backlog"
+    assigned_to: "agent_a_backend"
+    dependencies: ["0.3"]
+
+  - id: "0.5"
+    name: "Design System & Component Library"
+    status: "in-progress"
+    assigned_to: "agent_b_frontend"
+
+  - id: "0.6"
+    name: "Infrastructure Integration Tests"
+    status: "backlog"
+    assigned_to: "main"
+    dependencies: ["0.1", "0.2", "0.3", "0.4", "0.5"]
+
+progress:
+  total_stories: 6
+  completed: 0
+  in_progress: 0
+  percentage: 0

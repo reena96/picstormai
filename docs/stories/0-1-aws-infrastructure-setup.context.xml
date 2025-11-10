@@ -1,0 +1,224 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>0</epicId>
+    <storyId>1</storyId>
+    <title>AWS Infrastructure Setup</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-09</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/0-1-aws-infrastructure-setup.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>DevOps engineer</asA>
+    <iWant>to provision all required AWS resources using Infrastructure as Code</iWant>
+    <soThat>the application has a secure, scalable cloud environment</soThat>
+    <tasks>
+      - Task 1: Setup Terraform Project Structure (AC: #1-9)
+      - Task 2: Provision VPC and Networking (AC: #1)
+      - Task 3: Provision RDS PostgreSQL Database (AC: #2, #8, #9)
+      - Task 4: Provision ElastiCache Redis Cluster (AC: #3, #8, #9)
+      - Task 5: Provision S3 Buckets (AC: #4, #8, #9)
+      - Task 6: Provision CloudFront CDN Distribution (AC: #5, #8, #9)
+      - Task 7: Provision Application Load Balancer (AC: #6, #8, #9)
+      - Task 8: Provision EC2 Auto Scaling Group (AC: #7, #9)
+      - Task 9: Validation and Documentation (AC: #10)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. VPC Setup: VPC with public/private subnets across 2 AZs created
+    2. Database: RDS PostgreSQL 15.x (Multi-AZ) provisioned
+    3. Cache: ElastiCache Redis cluster configured
+    4. Storage: S3 buckets created with CORS and lifecycle policies
+    5. CDN: CloudFront CDN distribution configured
+    6. Load Balancing: Application Load Balancer deployed
+    7. Compute: EC2 Auto Scaling Group configured
+    8. Security: All resources encrypted at rest and in transit
+    9. Tagging: All resources tagged with Environment, Project, ManagedBy
+    10. Validation: All resources verified via AWS Console and connectivity tests
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD-RapidPhotoUpload.md</path>
+        <title>Product Requirements Document</title>
+        <section>9. Technical Architecture</section>
+        <snippet>Architecture uses AWS services: S3 for photo storage, RDS PostgreSQL for metadata, ElastiCache Redis for session state, CloudFront CDN for delivery, ALB for load balancing, EC2 Auto Scaling for compute. Spring WebFlux backend with reactive architecture.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD-RapidPhotoUpload.md</path>
+        <title>Product Requirements Document</title>
+        <section>9.3 System Architecture Diagram</section>
+        <snippet>Users access via CloudFront CDN → ALB → Spring Boot instances (Auto Scaling Group) → PostgreSQL (RDS) + Redis (ElastiCache). S3 stores photos with server-side encryption. All components span multiple AZs for high availability.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD-RapidPhotoUpload.md</path>
+        <title>Product Requirements Document</title>
+        <section>8.4 Security Requirements</section>
+        <snippet>NFR-SEC1: JWT tokens with RS256/HS256, BCrypt password hashing. NFR-SEC2: HTTPS/TLS 1.2+ for transit encryption, S3 AES-256 for at-rest encryption, pre-signed URLs time-limited to 15 minutes.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD-RapidPhotoUpload.md</path>
+        <title>Product Requirements Document</title>
+        <section>9.5 Database Schema</section>
+        <snippet>Core tables: users, upload_sessions, uploads, photos, photo_tags. RDS PostgreSQL with indexed queries, JSONB metadata field for flexibility, soft delete support.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics/epic-0-foundation-infrastructure.md</path>
+        <title>Epic 0: Foundation & Infrastructure</title>
+        <section>Story 0.1: AWS Infrastructure Setup</section>
+        <snippet>Provision VPC (2 AZs, public/private subnets), RDS PostgreSQL 15.x Multi-AZ, ElastiCache Redis, S3 with CORS, CloudFront CDN, ALB, EC2 Auto Scaling Group. Use Terraform for IaC, store secrets in AWS Secrets Manager, enable encryption at rest and in transit.</snippet>
+      </doc>
+      <doc>
+        <path>docs/AWS-INFRASTRUCTURE-SUMMARY.md</path>
+        <title>AWS Infrastructure - Complete Automation Summary</title>
+        <section>What Gets Deployed</section>
+        <snippet>IMPORTANT NOTE: Project uses AWS CDK (TypeScript) not Terraform. Complete stack includes: VPC with 3 AZs, RDS PostgreSQL 15.4 with Multi-AZ, ElastiCache Redis 7.0, S3 buckets with CORS and encryption, CloudFront distribution, ALB with health checks, Auto Scaling Group (1-10 instances), IAM roles, Secrets Manager for credentials, CloudWatch alarms.</snippet>
+      </doc>
+      <doc>
+        <path>docs/AWS-INFRASTRUCTURE-SUMMARY.md</path>
+        <title>AWS Infrastructure - Complete Automation Summary</title>
+        <section>How to Deploy</section>
+        <snippet>Deployment: cd infrastructure/cdk, npm install, cdk bootstrap, npm run deploy:dev. Takes 20 minutes automated. Dev environment costs ~$113/month, production ~$478/month.</snippet>
+      </doc>
+      <doc>
+        <path>docs/TECH-STACK-DECISIONS.md</path>
+        <title>Technology Stack Decisions</title>
+        <section>Infrastructure</section>
+        <snippet>AWS Cloud Platform chosen for mature S3 SDK, pre-signed URLs, Lambda integration. AWS CDK used for infrastructure as code (TypeScript). Environment separation: dev (cost-optimized) vs prod (high-availability with Multi-AZ).</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>infrastructure/cdk/bin/app.ts</path>
+        <kind>CDK App Entry Point</kind>
+        <symbol>CDK Application</symbol>
+        <lines>1-50</lines>
+        <reason>Defines CDK app with dev and prod environment configurations. Entry point for infrastructure deployment.</reason>
+      </artifact>
+      <artifact>
+        <path>infrastructure/cdk/lib/rapidphoto-stack.ts</path>
+        <kind>CDK Stack Definition</kind>
+        <symbol>RapidPhotoStack</symbol>
+        <lines>1-590</lines>
+        <reason>Main infrastructure stack (590 lines). Defines all AWS resources: VPC, RDS, ElastiCache, S3, CloudFront, ALB, Auto Scaling Group, IAM roles, security groups, CloudWatch alarms. This is the complete infrastructure implementation.</reason>
+      </artifact>
+      <artifact>
+        <path>infrastructure/cdk/package.json</path>
+        <kind>NPM Configuration</kind>
+        <symbol>CDK Dependencies</symbol>
+        <lines>1-50</lines>
+        <reason>Defines CDK dependencies and deployment scripts (deploy:dev, deploy:prod, destroy).</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package>aws-cdk-lib</package>
+        <purpose>AWS Cloud Development Kit core library</purpose>
+      </node>
+      <node>
+        <package>aws-cdk</package>
+        <purpose>AWS CDK CLI tool for deployment</purpose>
+      </node>
+      <node>
+        <package>typescript</package>
+        <purpose>TypeScript compiler for CDK infrastructure code</purpose>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - **CRITICAL CONSTRAINT**: Project already uses AWS CDK (TypeScript), NOT Terraform as specified in epic. The infrastructure code already exists in infrastructure/cdk/ directory with 590 lines implementing all required resources.
+    - Infrastructure as Code: Use AWS CDK (TypeScript) for all AWS resource provisioning
+    - State Management: CDK uses CloudFormation for state tracking (not Terraform S3 backend)
+    - Modular Structure: Resources organized in single stack file (lib/rapidphoto-stack.ts)
+    - Environment Separation: Dev and prod environments defined with different configurations (cost vs high-availability)
+    - Security: All data encrypted at rest (RDS: KMS, S3: AES-256, ElastiCache: encryption enabled) and in transit (TLS 1.2+)
+    - Secrets Management: Database credentials auto-generated and stored in AWS Secrets Manager
+    - Network Isolation: RDS and Redis in private/isolated subnets, only accessible from EC2 in private subnets
+    - Tagging: All resources must be tagged with Environment, Project, ManagedBy tags
+    - High Availability: RDS Multi-AZ for prod, ALB spans multiple AZs, Auto Scaling Group across 3 AZs
+    - Scalability: Auto Scaling Group scales 1-10 instances based on CPU (70%) and request count (1000 req/min)
+    - Testing Pattern: Terraform validate/plan/fmt replaced with CDK synth, cdk diff, deployment validation
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>CDK Stack Outputs</name>
+      <kind>CloudFormation Outputs</kind>
+      <signature>
+        - PhotoBucketName: string (S3 bucket for photo uploads)
+        - ThumbnailBucketName: string (S3 bucket for thumbnails)
+        - DatabaseEndpoint: string (RDS PostgreSQL connection endpoint)
+        - DatabaseSecretArn: string (ARN for database credentials in Secrets Manager)
+        - RedisEndpoint: string (ElastiCache Redis connection endpoint)
+        - LoadBalancerDNS: string (ALB DNS name for backend access)
+        - CloudFrontDomain: string (CDN domain for content delivery)
+      </signature>
+      <path>infrastructure/cdk/lib/rapidphoto-stack.ts</path>
+    </interface>
+    <interface>
+      <name>NPM Deployment Scripts</name>
+      <kind>Package.json Scripts</kind>
+      <signature>
+        - npm run deploy:dev: Deploy development environment (single-AZ, cost-optimized)
+        - npm run deploy:prod: Deploy production environment (Multi-AZ, high-availability)
+        - npm run destroy: Destroy infrastructure (use with caution)
+        - cdk synth: Preview CloudFormation template
+        - cdk diff: Show differences before deploying
+      </signature>
+      <path>infrastructure/cdk/package.json</path>
+    </interface>
+    <interface>
+      <name>Environment Variables for Spring Boot</name>
+      <kind>EC2 User Data Configuration</kind>
+      <signature>
+        SPRING_PROFILES_ACTIVE: dev | prod
+        DB_HOST: RDS endpoint
+        DB_PORT: 5432
+        DB_NAME: rapidphoto
+        DB_SECRET_ARN: Secrets Manager ARN
+        REDIS_HOST: ElastiCache endpoint
+        REDIS_PORT: 6379
+        S3_BUCKET: Photo bucket name
+        S3_THUMBNAIL_BUCKET: Thumbnail bucket name
+        AWS_REGION: us-east-1
+      </signature>
+      <path>infrastructure/cdk/lib/rapidphoto-stack.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Infrastructure testing for AWS CDK follows these patterns:
+      - CDK Synth Validation: `cdk synth` validates TypeScript code and generates CloudFormation template
+      - CDK Diff Preview: `cdk diff` shows changes before deployment (equivalent to terraform plan)
+      - Deployment Validation: Post-deployment verification via AWS Console and connectivity tests
+      - Resource Verification: Verify all resources created in CloudFormation stack
+      - Connectivity Tests: Test EC2 → RDS (psql), EC2 → Redis (redis-cli PING), S3 upload/download
+      - Security Validation: Verify security group rules, encryption settings, IAM permissions
+      - Health Checks: ALB health check endpoint (/actuator/health) must respond with 200 OK
+      - Cost Validation: Verify resource configurations match dev (~$113/mo) or prod (~$478/mo) estimates
+    </standards>
+    <locations>
+      - infrastructure/cdk/lib/rapidphoto-stack.ts (main stack code)
+      - infrastructure/cdk/test/ (if CDK unit tests added)
+      - AWS Console → CloudFormation → Stacks → RapidPhotoStack-Dev/Prod (deployment verification)
+      - AWS Console → EC2, RDS, ElastiCache, S3, CloudFront (resource verification)
+    </locations>
+    <ideas>
+      <idea ac="1">Test VPC creation: Verify 3 AZs with public, private, and isolated subnets. Check route tables and NAT gateways.</idea>
+      <idea ac="2">Test RDS provisioning: Verify PostgreSQL 15.4 created with Multi-AZ (prod) or single-AZ (dev). Check encryption, automated backups, and Secrets Manager credential storage.</idea>
+      <idea ac="3">Test ElastiCache Redis: Verify Redis 7.0 cluster created with encryption enabled. Test connectivity from EC2.</idea>
+      <idea ac="4">Test S3 buckets: Verify photo and thumbnail buckets with versioning, encryption (AES-256), CORS policy, and lifecycle rules. Test upload/download.</idea>
+      <idea ac="5">Test CloudFront distribution: Verify CDN created with S3 origin, HTTPS enforcement, and API routing to ALB.</idea>
+      <idea ac="6">Test ALB: Verify load balancer in public subnets with health checks configured for /actuator/health endpoint.</idea>
+      <idea ac="7">Test Auto Scaling Group: Verify EC2 instances launch with correct user data, attach to ALB target group, and scale based on CPU/request metrics.</idea>
+      <idea ac="8">Test security: Verify all resources use encryption at rest and in transit. Check TLS 1.2+ enforcement.</idea>
+      <idea ac="9">Test tagging: Verify all resources tagged with Environment (dev/prod), Project (RapidPhotoUpload), ManagedBy (CDK).</idea>
+      <idea ac="10">End-to-end validation: Run all connectivity tests, verify stack outputs, test environment variables on EC2 instances, validate cost estimates.</idea>
+    </ideas>
+  </tests>
+</story-context>

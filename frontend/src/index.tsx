@@ -1,21 +1,14 @@
 /**
  * Main entry point for PicStormAI frontend
- * Bootstraps React Native Web application with theme provider
+ * Bootstraps React Native Web application
  */
 
 import React from 'react';
 import { AppRegistry } from 'react-native';
-import { ThemeProvider } from './contexts/ThemeContext';
 import App from './App';
 
-const RootApp = () => (
-  <ThemeProvider>
-    <App />
-  </ThemeProvider>
-);
-
 // Register the app for React Native
-AppRegistry.registerComponent('PicStormAI', () => RootApp);
+AppRegistry.registerComponent('PicStormAI', () => App);
 
 // Run the app for web
 if (typeof document !== 'undefined') {
@@ -24,4 +17,4 @@ if (typeof document !== 'undefined') {
   });
 }
 
-export default RootApp;
+export default App;

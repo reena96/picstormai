@@ -8,7 +8,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, Text, StyleSheet, ViewStyle, TextStyle, Pressable } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
-import { Eye, EyeOff } from 'lucide-react-native';
 
 export interface InputProps {
   type?: 'text' | 'email' | 'password';
@@ -129,12 +128,17 @@ export const Input: React.FC<InputProps> = ({
             accessibilityRole="button"
             accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            style={{ paddingHorizontal: 8 }}
           >
-            {showPassword ? (
-              <EyeOff size={20} color={theme.colors.text.secondary} />
-            ) : (
-              <Eye size={20} color={theme.colors.text.secondary} />
-            )}
+            <Text
+              style={{
+                fontSize: 12,
+                color: theme.colors.text.secondary,
+                fontWeight: '600' as TextStyle['fontWeight'],
+              }}
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </Text>
           </Pressable>
         )}
       </View>

@@ -1,10 +1,14 @@
 package com.rapidphoto.cqrs.commands;
 
-import java.util.UUID;
-
 /**
- * Command to verify user's email address.
+ * Command to verify user's email address using verification token.
  */
 public record VerifyEmailCommand(
-    UUID userId
-) {}
+    String token
+) {
+    public VerifyEmailCommand {
+        if (token == null || token.isEmpty()) {
+            throw new IllegalArgumentException("Verification token cannot be null or empty");
+        }
+    }
+}

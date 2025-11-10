@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { Pressable, Text, StyleSheet, ViewStyle, TextStyle, ActivityIndicator } from 'react-native';
+import { Pressable, Text, ViewStyle, TextStyle, ActivityIndicator } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
 
 export interface ButtonProps {
@@ -107,30 +107,58 @@ export const Button: React.FC<ButtonProps> = ({
     return { ...baseTextStyle, ...sizeTextStyles[size], ...colorStyle };
   };
 
-  return (
-    <Pressable
-      onPress={disabled || loading ? undefined : onPress}
-      disabled={disabled || loading}
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel || (typeof children === 'string' ? children : undefined)}
-      accessibilityState={{ disabled: disabled || loading, busy: loading }}
-      testID={testID}
-      style={({ pressed }) => [getButtonStyle(pressed), style]}
-      aria-busy={loading}
-    >
-      {loading ? (
+  const childArray = React.Children.toArray(children);
+  const isTextChild = (child: React.ReactNode): child is string | number =>
+    typeof child === 'string' || typeof child === 'number';
+
+  const normalizedChildren = childArray.map((child, index) => {
+    if (isTextChild(child)) {
+      return (
+        <Text key={`button-text-${index}`} style={getTextStyle()}>
+          {child}
+        </Text>
+      );
+    }
+    return child;
+  });
+
+  const derivedAccessibilityLabel =
+    accessibilityLabel ||
+    (() => {
+      const labelText = childArray
+        .filter(isTextChild)
+        .map((child) => String(child).trim())
+        .filter(Boolean)
+        .join(' ');
+      return labelText.length > 0 ? labelText : undefined;
+    })();
+
+  const renderChildren = () => {
+    if (loading) {
+      return (
         <ActivityIndicator
           size="small"
           color={variant === 'primary' || variant === 'fab' ? theme.colors.white : theme.colors.primary[500]}
           accessibilityLabel="Loading"
         />
-      ) : (
-        <Text style={getTextStyle()}>{children}</Text>
-      )}
+      );
+    }
+
+    return normalizedChildren;
+  };
+
+  return (
+    <Pressable
+      onPress={disabled || loading ? undefined : onPress}
+      disabled={disabled || loading}
+      accessibilityRole="button"
+      accessibilityLabel={derivedAccessibilityLabel}
+      accessibilityState={{ disabled: disabled || loading, busy: loading }}
+      testID={testID}
+      style={({ pressed }) => [getButtonStyle(pressed), style]}
+      aria-busy={loading}
+    >
+      {renderChildren()}
     </Pressable>
   );
 };
-
-const styles = StyleSheet.create({
-  // Additional styles can be added here if needed
-});

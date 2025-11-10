@@ -17,6 +17,8 @@ import com.rapidphoto.domain.user.UserPreferences;
 import com.rapidphoto.domain.user.UserPreferencesRepository;
 import com.rapidphoto.domain.user.UserRepository;
 import com.rapidphoto.domain.upload.UploadSessionRepository;
+import com.rapidphoto.domain.verification.EmailVerificationTokenRepository;
+import com.rapidphoto.email.EmailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,6 +52,12 @@ class CQRSIntegrationTest {
     private UploadSessionRepository uploadSessionRepository;
 
     @Mock
+    private EmailVerificationTokenRepository verificationTokenRepository;
+
+    @Mock
+    private EmailService emailService;
+
+    @Mock
     private ApplicationEventPublisher eventPublisher;
 
     private RegisterUserCommandHandler registerUserHandler;
@@ -60,7 +68,13 @@ class CQRSIntegrationTest {
     @BeforeEach
     void setUp() {
         // Initialize handlers
-        registerUserHandler = new RegisterUserCommandHandler(userRepository, userPreferencesRepository, eventPublisher);
+        registerUserHandler = new RegisterUserCommandHandler(
+            userRepository,
+            userPreferencesRepository,
+            verificationTokenRepository,
+            emailService,
+            eventPublisher
+        );
         getUserByIdHandler = new GetUserByIdQueryHandler(userRepository);
         startUploadSessionHandler = new StartUploadSessionCommandHandler(uploadSessionRepository, eventPublisher);
         getActiveSessionsHandler = new GetActiveSessionsForUserQueryHandler(uploadSessionRepository);
@@ -71,7 +85,7 @@ class CQRSIntegrationTest {
         // Given
         RegisterUserCommand command = new RegisterUserCommand(
             "integration@test.com",
-            "password123",
+            "Password123",
             "Integration Test User"
         );
 
@@ -80,6 +94,8 @@ class CQRSIntegrationTest {
         when(userRepository.existsByEmail(command.email())).thenReturn(Mono.just(false));
         when(userRepository.save(any(User.class))).thenReturn(Mono.just(user));
         when(userPreferencesRepository.save(any(UserPreferences.class))).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+        when(verificationTokenRepository.save(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+        when(emailService.sendVerificationEmail(any(), any(), any())).thenReturn(Mono.empty());
         when(userRepository.findById(user.getId())).thenReturn(Mono.just(user));
 
         // When - Execute command
@@ -137,13 +153,13 @@ class CQRSIntegrationTest {
         // Given
         RegisterUserCommand command1 = new RegisterUserCommand(
             "user1@test.com",
-            "password123",
+            "Password123",
             "User One"
         );
 
         RegisterUserCommand command2 = new RegisterUserCommand(
             "user2@test.com",
-            "password123",
+            "Password123",
             "User Two"
         );
 
@@ -154,6 +170,8 @@ class CQRSIntegrationTest {
         when(userRepository.existsByEmail(command2.email())).thenReturn(Mono.just(false));
         when(userRepository.save(any(User.class))).thenReturn(Mono.just(user1), Mono.just(user2));
         when(userPreferencesRepository.save(any(UserPreferences.class))).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+        when(verificationTokenRepository.save(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+        when(emailService.sendVerificationEmail(any(), any(), any())).thenReturn(Mono.empty());
         when(userRepository.findById(user1.getId())).thenReturn(Mono.just(user1));
         when(userRepository.findById(user2.getId())).thenReturn(Mono.just(user2));
 
@@ -176,7 +194,7 @@ class CQRSIntegrationTest {
         // Given
         RegisterUserCommand command = new RegisterUserCommand(
             "duplicate@test.com",
-            "password123",
+            "Password123",
             "First User"
         );
 
@@ -185,6 +203,8 @@ class CQRSIntegrationTest {
         when(userRepository.existsByEmail(command.email())).thenReturn(Mono.just(false), Mono.just(true));
         when(userRepository.save(any(User.class))).thenReturn(Mono.just(user));
         when(userPreferencesRepository.save(any(UserPreferences.class))).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+        when(verificationTokenRepository.save(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+        when(emailService.sendVerificationEmail(any(), any(), any())).thenReturn(Mono.empty());
 
         // When - Register first user
         UUID userId = registerUserHandler.handle(command).block();
@@ -193,7 +213,7 @@ class CQRSIntegrationTest {
         // Then - Attempting to register with same email should fail
         RegisterUserCommand duplicateCommand = new RegisterUserCommand(
             "duplicate@test.com",
-            "differentPassword",
+            "DifferentPassword456",
             "Second User"
         );
 

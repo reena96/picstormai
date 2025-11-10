@@ -1,6 +1,7 @@
 package com.rapidphoto.domain.user;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.UUID;
@@ -13,11 +14,30 @@ import java.util.UUID;
 public class UserPreferences {
 
     @Id
+    @Column("id")
+    private UUID id;
+
+    @Column("user_id")
     private UUID userId;
+
+    @Column("animations")
     private boolean animationsEnabled;
+
+    @Column("sound")
     private boolean soundEnabled;
+
+    @Column("theme")
     private Theme theme;
+
+    @Column("concurrent_uploads")
     private int concurrentUploads;
+
+    // These fields don't exist in DB yet - will default to false until migration added
+    @Column("upload_complete_notifications")
+    private boolean uploadCompleteNotifications;
+
+    @Column("auto_retry_failed")
+    private boolean autoRetryFailed;
 
     // Package-private constructor for persistence
     UserPreferences() {}
@@ -28,6 +48,8 @@ public class UserPreferences {
         this.soundEnabled = true;
         this.theme = Theme.SYSTEM;
         this.concurrentUploads = 3; // Default 3 concurrent uploads
+        this.uploadCompleteNotifications = true;
+        this.autoRetryFailed = true;
     }
 
     /**
@@ -65,16 +87,34 @@ public class UserPreferences {
     }
 
     /**
-     * Update concurrent uploads limit (1-10).
+     * Update concurrent uploads limit (1-20).
      */
     public void setConcurrentUploads(int limit) {
-        if (limit < 1 || limit > 10) {
-            throw new IllegalArgumentException("Concurrent uploads must be between 1 and 10");
+        if (limit < 1 || limit > 20) {
+            throw new IllegalArgumentException("Concurrent uploads must be between 1 and 20");
         }
         this.concurrentUploads = limit;
     }
 
+    /**
+     * Update upload complete notifications preference.
+     */
+    public void setUploadCompleteNotifications(boolean enabled) {
+        this.uploadCompleteNotifications = enabled;
+    }
+
+    /**
+     * Update auto-retry failed uploads preference.
+     */
+    public void setAutoRetryFailed(boolean enabled) {
+        this.autoRetryFailed = enabled;
+    }
+
     // Getters
+
+    public UUID getId() {
+        return id;
+    }
 
     public UUID getUserId() {
         return userId;
@@ -94,6 +134,14 @@ public class UserPreferences {
 
     public int getConcurrentUploads() {
         return concurrentUploads;
+    }
+
+    public boolean isUploadCompleteNotifications() {
+        return uploadCompleteNotifications;
+    }
+
+    public boolean isAutoRetryFailed() {
+        return autoRetryFailed;
     }
 
     public enum Theme {

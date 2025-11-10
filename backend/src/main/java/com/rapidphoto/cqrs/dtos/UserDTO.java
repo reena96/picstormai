@@ -14,6 +14,7 @@ public record UserDTO(
     String email,
     String displayName,
     boolean emailVerified,
+    boolean hasSeenOnboarding,
     Instant createdAt,
     Instant lastLoginAt
 ) {
@@ -26,6 +27,7 @@ public record UserDTO(
             user.getEmail().getValue(),
             user.getDisplayName(),
             user.isEmailVerified(),
+            user.isHasSeenOnboarding(),
             user.getCreatedAt(),
             user.getLastLoginAt()
         );

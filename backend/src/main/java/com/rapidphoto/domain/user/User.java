@@ -27,6 +27,7 @@ public class User implements Persistable<UUID> {
     private String passwordHash;
     private String displayName;
     private boolean emailVerified;
+    private boolean hasSeenOnboarding;
     private Instant createdAt;
     private Instant updatedAt;
     private Instant lastLoginAt;
@@ -45,6 +46,7 @@ public class User implements Persistable<UUID> {
         this.passwordHash = passwordHash;
         this.displayName = displayName;
         this.emailVerified = false;
+        this.hasSeenOnboarding = false;
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
     }
@@ -105,6 +107,18 @@ public class User implements Persistable<UUID> {
         this.updatedAt = Instant.now();
     }
 
+    /**
+     * Mark onboarding tutorial as complete.
+     * Idempotent operation - safe to call multiple times.
+     */
+    public void markOnboardingComplete() {
+        if (this.hasSeenOnboarding) {
+            return; // Already completed, idempotent
+        }
+        this.hasSeenOnboarding = true;
+        this.updatedAt = Instant.now();
+    }
+
     // Getters (no setters - immutability enforced)
 
     public UUID getId() {
@@ -133,6 +147,10 @@ public class User implements Persistable<UUID> {
 
     public Instant getLastLoginAt() {
         return lastLoginAt;
+    }
+
+    public boolean isHasSeenOnboarding() {
+        return hasSeenOnboarding;
     }
 
     // Persistable interface methods

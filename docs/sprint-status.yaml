@@ -28,13 +28,13 @@ stories:
 
   - id: "1.4"
     name: "User Settings Panel"
-    status: "review"
+    status: "done"
     assigned_to: "agent"
     dependencies: ["1.3"]
 
   - id: "1.5"
     name: "Onboarding Tutorial (First-Time Users)"
-    status: "review"
+    status: "done"
     assigned_to: "agent"
     dependencies: ["1.3"]
 
@@ -46,7 +46,7 @@ stories:
 
 progress:
   total_stories: 6
-  completed: 0
+  completed: 2
   in_progress: 0
-  in_review: 5
-  percentage: 0
+  in_review: 3
+  percentage: 33

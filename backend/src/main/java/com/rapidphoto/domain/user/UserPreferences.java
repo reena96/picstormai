@@ -18,6 +18,8 @@ public class UserPreferences {
     private boolean soundEnabled;
     private Theme theme;
     private int concurrentUploads;
+    private boolean uploadCompleteNotifications;
+    private boolean autoRetryFailed;
 
     // Package-private constructor for persistence
     UserPreferences() {}
@@ -28,6 +30,8 @@ public class UserPreferences {
         this.soundEnabled = true;
         this.theme = Theme.SYSTEM;
         this.concurrentUploads = 3; // Default 3 concurrent uploads
+        this.uploadCompleteNotifications = true;
+        this.autoRetryFailed = true;
     }
 
     /**
@@ -65,13 +69,27 @@ public class UserPreferences {
     }
 
     /**
-     * Update concurrent uploads limit (1-10).
+     * Update concurrent uploads limit (1-20).
      */
     public void setConcurrentUploads(int limit) {
-        if (limit < 1 || limit > 10) {
-            throw new IllegalArgumentException("Concurrent uploads must be between 1 and 10");
+        if (limit < 1 || limit > 20) {
+            throw new IllegalArgumentException("Concurrent uploads must be between 1 and 20");
         }
         this.concurrentUploads = limit;
+    }
+
+    /**
+     * Update upload complete notifications preference.
+     */
+    public void setUploadCompleteNotifications(boolean enabled) {
+        this.uploadCompleteNotifications = enabled;
+    }
+
+    /**
+     * Update auto-retry failed uploads preference.
+     */
+    public void setAutoRetryFailed(boolean enabled) {
+        this.autoRetryFailed = enabled;
     }
 
     // Getters
@@ -94,6 +112,14 @@ public class UserPreferences {
 
     public int getConcurrentUploads() {
         return concurrentUploads;
+    }
+
+    public boolean isUploadCompleteNotifications() {
+        return uploadCompleteNotifications;
+    }
+
+    public boolean isAutoRetryFailed() {
+        return autoRetryFailed;
     }
 
     public enum Theme {

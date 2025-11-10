@@ -11,6 +11,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -44,6 +45,7 @@ export const RootNavigator: React.FC = () => {
           // Main Stack
           <Stack.Group>
             <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="Settings" component={SettingsScreen} />
           </Stack.Group>
         )}
       </Stack.Navigator>

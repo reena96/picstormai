@@ -13,7 +13,9 @@ public record UserPreferencesDTO(
     boolean animationsEnabled,
     boolean soundEnabled,
     String theme,
-    int concurrentUploads
+    int concurrentUploads,
+    boolean uploadCompleteNotifications,
+    boolean autoRetryFailed
 ) {
     /**
      * Create DTO from domain entity.
@@ -24,7 +26,9 @@ public record UserPreferencesDTO(
             preferences.isAnimationsEnabled(),
             preferences.isSoundEnabled(),
             preferences.getTheme().name(),
-            preferences.getConcurrentUploads()
+            preferences.getConcurrentUploads(),
+            preferences.isUploadCompleteNotifications(),
+            preferences.isAutoRetryFailed()
         );
     }
 }

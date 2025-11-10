@@ -5,13 +5,16 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/atoms/Button';
+import { Settings } from 'lucide-react-native';
 
 export const HomeScreen: React.FC = () => {
   const { theme } = useTheme();
   const { logout } = useAuth();
+  const navigation = useNavigation();
 
   const styles = StyleSheet.create<{
     container: ViewStyle;
@@ -47,6 +50,7 @@ export const HomeScreen: React.FC = () => {
     buttonContainer: {
       width: '100%',
       maxWidth: 300,
+      gap: theme.spacing[3],
     },
   });
 
@@ -59,6 +63,15 @@ export const HomeScreen: React.FC = () => {
         </Text>
 
         <View style={styles.buttonContainer}>
+          <Button
+            variant="primary"
+            onPress={() => navigation.navigate('Settings' as never)}
+            testID="settings-button"
+          >
+            <Settings size={20} color={theme.colors.white} style={{ marginRight: theme.spacing[2] }} />
+            Settings
+          </Button>
+
           <Button
             variant="secondary"
             onPress={logout}

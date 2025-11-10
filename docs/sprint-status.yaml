@@ -16,7 +16,7 @@ stories:
 
   - id: "1.2"
     name: "User Registration & Email Verification"
-    status: "backlog"
+    status: "review"
     assigned_to: "agent"
     dependencies: ["1.1"]
 
@@ -48,5 +48,5 @@ progress:
   total_stories: 6
   completed: 0
   in_progress: 0
-  in_review: 1
+  in_review: 2
   percentage: 0

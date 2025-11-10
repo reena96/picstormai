@@ -21,14 +21,16 @@ class RedisIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void shouldConnectToRedis() {
-        // Test PING command
+        // Test connection with SET/GET operation
+        String testKey = "test:connection:" + UUID.randomUUID();
+        String testValue = "PONG";
+
         StepVerifier.create(
-            redisTemplate.getConnectionFactory()
-                .getReactiveConnection()
-                .serverCommands()
-                .ping()
+            redisTemplate.opsForValue().set(testKey, testValue)
+                .then(redisTemplate.opsForValue().get(testKey))
+                .doFinally(signal -> redisTemplate.delete(testKey).subscribe())
         )
-            .assertNext(response -> assertThat(response).isEqualTo("PONG"))
+            .assertNext(response -> assertThat(response).isEqualTo(testValue))
             .verifyComplete();
     }
 

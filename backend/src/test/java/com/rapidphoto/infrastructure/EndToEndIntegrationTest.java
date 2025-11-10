@@ -197,13 +197,12 @@ class EndToEndIntegrationTest extends BaseIntegrationTest {
             .verifyComplete();
 
         // Redis check
+        String redisTestKey = "test:e2e:" + UUID.randomUUID();
         StepVerifier.create(
-            redisTemplate.getConnectionFactory()
-                .getReactiveConnection()
-                .serverCommands()
-                .ping()
+            redisTemplate.opsForValue().set(redisTestKey, "test")
+                .then(redisTemplate.delete(redisTestKey))
         )
-            .assertNext(response -> assertThat(response).isEqualTo("PONG"))
+            .assertNext(deleteCount -> assertThat(deleteCount).isEqualTo(1L))
             .verifyComplete();
 
         // S3 check

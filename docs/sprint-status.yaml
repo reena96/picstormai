@@ -26,9 +26,10 @@ stories:
 
   - id: "0.4"
     name: "CQRS Structure Setup"
-    status: "backlog"
+    status: "done"
     assigned_to: "agent_a_backend"
     dependencies: ["0.3"]
+    completed: "2025-11-09"
 
   - id: "0.5"
     name: "Design System & Component Library"
@@ -43,6 +44,6 @@ stories:
 
 progress:
   total_stories: 6
-  completed: 0
+  completed: 1
   in_progress: 0
-  percentage: 0
+  percentage: 17

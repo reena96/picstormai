@@ -334,9 +334,8 @@ export class RapidPhotoStack extends cdk.Stack {
       '# systemctl enable rapidphoto',
       '# systemctl start rapidphoto',
       '',
-      '# Signal CloudFormation that instance is ready',
-      'yum install -y aws-cfn-bootstrap',
-      `/opt/aws/bin/cfn-signal -e $? --stack ${this.stackName} --resource AutoScalingGroup --region ${this.region}`,
+      '# Instance is ready - no signal needed',
+      'echo "Instance setup complete"',
     );
 
     // Auto Scaling Group
@@ -360,9 +359,8 @@ export class RapidPhotoStack extends cdk.Stack {
       healthCheck: autoscaling.HealthCheck.elb({
         grace: cdk.Duration.minutes(5),
       }),
-      signals: autoscaling.Signals.waitForAll({
-        timeout: cdk.Duration.minutes(10),
-      }),
+      // Removed signals - instances will launch without needing to report success
+      // This allows infrastructure to deploy before Spring Boot app is ready
     });
 
     // Attach ASG to target group

@@ -1,0 +1,473 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>0</epicId>
+    <storyId>5</storyId>
+    <title>Design System & Component Library</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-09</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/0-5-design-system-component-library.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>frontend developer</asA>
+    <iWant>a comprehensive design system with React Native for Web components</iWant>
+    <soThat>UI implementation is consistent, accessible, and works seamlessly across web, iOS, and Android platforms</soThat>
+    <tasks>
+### Task 1: Project Setup & Design Tokens (AC: 1-7, 11)
+- Initialize React Native project with TypeScript
+- Configure react-native-web for web compilation
+- Install dependencies: @expo/vector-icons or lucide-react-native
+- Create design tokens file with color palette, typography, spacing, shadows, border radius, animations
+- Create theme context with light/dark theme objects, theme toggle, AsyncStorage persistence
+- Write unit tests for theme context
+
+### Task 2: Atom Components (AC: 8)
+- Button Component (primary, secondary, text, FAB variants + states + accessibility)
+- Input Component (text, email, password + validation states + accessibility)
+- Text Component (h1-h4, body variants + theme-aware + accessibility)
+- Icon Component (wrapper for Lucide/Heroicons + sizes + accessibility)
+- Badge Component (success, error, warning, info variants)
+- Spinner Component (circular SVG spinner + sizes + animation)
+
+### Task 3: Molecule Components (AC: 9)
+- PhotoCard (1:1 aspect ratio + hover overlay + metadata + skeleton loading)
+- ProgressBar (linear progress + gradient fill + indeterminate variant)
+- UploadStatusIndicator (thumbnail + status badge + progress + controls)
+- TagChip (pill shape + remove button + click handler)
+- EmptyState (illustration + headline + subtext + CTA)
+
+### Task 4: Organism Components (AC: 10)
+- PhotoGrid (responsive 2-5 columns + lazy loading + infinite scroll + EmptyState)
+- UploadDashboard (aggregate progress + scrollable list + sections + WebSocket integration point)
+- SettingsPanel (slide-in panel + Notifications/Appearance/Upload sections + toggles + save)
+- Lightbox (full-screen overlay + navigation + swipe gestures + zoom + metadata overlay)
+
+### Task 5: Storybook Setup & Documentation (AC: 16-21)
+- Install and configure Storybook for React Native Web
+- Create stories for all atoms (all variants and states)
+- Create stories for all molecules (with interaction examples)
+- Create stories for all organisms (with realistic mock data)
+- Create design tokens documentation page
+- Add accessibility notes to component stories
+
+### Task 6: Accessibility Audit & Testing (AC: 22-28)
+- Run axe DevTools automated scan
+- Fix contrast ratio issues (4.5:1 minimum)
+- Test keyboard navigation (Tab, Enter, Escape, Arrow keys)
+- Test screen readers (NVDA web, VoiceOver iOS, TalkBack Android)
+- Verify touch targets (44×44px iOS, 48×48dp Android minimum)
+- Add focus indicators (3px outline, 2px offset)
+- Test reduced motion preference
+
+### Task 7: Theme Implementation & Testing (AC: 29-34)
+- Test theme toggle functionality
+- Verify all components adapt to theme changes
+- Test theme persistence across app restarts
+- Test system preference detection (prefers-color-scheme)
+- Verify color palette contrast in both themes
+- Write integration tests for theme switching
+
+### Task 8: Cross-Platform Testing
+- Test on web browsers (Chrome, Firefox, Safari)
+- Test on iOS simulator
+- Test on Android emulator
+- Verify responsive layouts on different screen sizes
+- Test touch interactions (mobile) and keyboard interactions (web)
+
+### Task 9: Performance Optimization
+- Profile component render performance
+- Optimize re-renders (React.memo where appropriate)
+- Lazy load images in PhotoGrid
+- Minimize bundle size
+- Test 60fps animations
+
+### Task 10: Documentation & Handoff
+- Create component usage guide in Storybook
+- Document design token usage
+- Create props reference for each component
+- Document accessibility best practices
+- Create validation guide (docs/validation/epic0_0.5_validation.md)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+### Design Tokens Implementation
+1. ✅ Color palette defined with CSS variables (primary, success, error, warning, neutral scales)
+2. ✅ Typography system implemented (Inter font family, sizes, weights, line heights)
+3. ✅ Spacing system based on 8px grid (4, 8, 12, 16, 24, 32, 48px)
+4. ✅ Shadow system with elevation levels (xs, sm, base, md, lg, xl)
+5. ✅ Animation timing functions and durations defined
+6. ✅ Border radius scales (sm, base, md, lg, xl, full)
+7. ✅ Light and dark theme support with context provider
+
+### Atomic Design Components
+8. ✅ Atoms implemented: Button, Input, Text, Icon, Badge, Spinner (all variants and states)
+9. ✅ Molecules implemented: PhotoCard, ProgressBar, UploadStatusIndicator, TagChip, EmptyState
+10. ✅ Organisms implemented: PhotoGrid, UploadDashboard, SettingsPanel, Lightbox
+
+### React Native for Web Setup
+11. ✅ React Native project configured with react-native-web
+12. ✅ Single codebase compiles to web, iOS, and Android
+13. ✅ Platform-specific code abstracted using Platform API
+14. ✅ Navigation works across all platforms
+15. ✅ Components use React Native primitives (View, Text, Pressable, etc.)
+
+### Storybook Documentation
+16. ✅ Storybook configured for component development
+17. ✅ All atoms have stories with all variants and states
+18. ✅ All molecules have stories with interaction examples
+19. ✅ All organisms have stories with realistic data
+20. ✅ Design tokens documented in Storybook
+21. ✅ Accessibility notes in each component story
+
+### Accessibility (WCAG 2.1 AA)
+22. ✅ Color contrast ratios meet 4.5:1 minimum (body text)
+23. ✅ All interactive elements keyboard accessible (Tab navigation)
+24. ✅ Focus indicators clearly visible (3px outline, 2px offset)
+25. ✅ ARIA labels present on icons and interactive elements
+26. ✅ Screen reader support tested with NVDA/VoiceOver
+27. ✅ Touch targets minimum 44×44px (iOS) / 48×48dp (Android)
+28. ✅ Semantic HTML/React Native elements used appropriately
+
+### Theme Support
+29. ✅ Theme context provider wraps application
+30. ✅ Light theme implemented with full color palette
+31. ✅ Dark theme implemented with inverted colors
+32. ✅ Theme toggle component working in SettingsPanel
+33. ✅ User preference persisted to local storage/AsyncStorage
+34. ✅ System preference detected and applied (prefers-color-scheme)
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/ui-ux-design-system.md</path>
+        <title>RapidPhotoUpload UI/UX Design System</title>
+        <section>Complete Design System Specification</section>
+        <snippet>Comprehensive design system covering visual design (colors, typography, spacing, shadows, iconography), component library (buttons, inputs, cards, progress indicators, modals), interaction patterns (upload flow, gallery, error handling), responsive design, accessibility (WCAG 2.1 AA), micro-interactions, platform-specific guidelines, and implementation checklist.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ui-ux-design-system.md</path>
+        <title>Visual Design System</title>
+        <section>2. Visual Design System</section>
+        <snippet>Color Palette: Primary (#2563EB), Semantic colors (Success #10B981, Warning #F59E0B, Error #EF4444), Neutral grays (900-50 scale). Typography: Inter font family with scale from 12px (xs) to 60px (6xl), weights 100-800. Spacing: 8px base unit with scale 4-80px. Shadows: 6 elevation levels (xs to xl). Border radius: sm (4px) to full (9999px).</snippet>
+      </doc>
+      <doc>
+        <path>docs/ui-ux-design-system.md</path>
+        <title>Component Library</title>
+        <section>3. Component Library</section>
+        <snippet>Components organized by Atomic Design: Atoms (Button, Input, Text, Icon, Badge, Spinner), Molecules (PhotoCard, ProgressBar, UploadStatusIndicator, TagChip, EmptyState), Organisms (PhotoGrid, UploadDashboard, SettingsPanel, Lightbox). Each component includes CSS specifications, variants, states, and accessibility requirements.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ui-ux-design-system.md</path>
+        <title>Accessibility Requirements</title>
+        <section>6. Accessibility</section>
+        <snippet>WCAG 2.1 Level AA compliance mandatory. Color contrast: 4.5:1 minimum (body text), 3:1 (large text). Keyboard navigation: All interactive elements focusable via Tab, focus indicators 3px outline with 2px offset. Screen reader support: Semantic HTML, ARIA labels on icons, live regions for status updates. Touch targets: 44×44px (iOS), 48×48dp (Android).</snippet>
+      </doc>
+      <doc>
+        <path>docs/ui-ux-design-system.md</path>
+        <title>Platform-Specific Guidelines</title>
+        <section>8. Platform-Specific Guidelines</section>
+        <snippet>Web: React 18 + TypeScript + Tailwind CSS, desktop-first power-user features, drag-and-drop support. Mobile: Flutter 3.x with Material Design 3, touch-first interactions, platform-specific patterns (iOS bottom sheets/swipe-back, Android FAB/Material bottom sheets), background upload with notifications.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD-RapidPhotoUpload.md</path>
+        <title>Technical Architecture - React Native for Web</title>
+        <section>9.2 Technology Stack - Frontend Unified</section>
+        <snippet>React Native (TypeScript) with react-native-web for 100% code reuse across web, iOS, Android. Benefits: Single codebase, AI development efficiency (Claude generates once for all platforms), single language (TypeScript), no SEO requirements (authenticated app). Proven at scale by Twitter/X, Uber Eats. Key packages: react-native-web, axios, @reduxjs/toolkit, react-native-keychain, react-native-image-picker, react-native-background-upload.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD-RapidPhotoUpload.md</path>
+        <title>Design Philosophy</title>
+        <section>10.1 Design Philosophy</section>
+        <snippet>Core Principles: 1) Speed & Efficiency (minimize clicks, instant feedback, keyboard shortcuts), 2) Clarity & Simplicity (clear hierarchy, uncluttered, self-explanatory), 3) Confidence & Trust (visible progress, immediate confirmations), 4) Delight & Polish (60fps animations, satisfying micro-interactions). Competitive benchmarks: Google Photos (clean layouts), Dropbox (clear progress), Cloudinary (professional dashboard).</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics/epic-0-foundation-infrastructure.md</path>
+        <title>Story 0.5 Acceptance Criteria</title>
+        <section>Story 0.5: Design System & Component Library</section>
+        <snippet>Design Tokens: colors, typography (font families, sizes, weights), spacing (4px grid), shadows, animations. Components: Atoms (Button, Input, Text, Icon, Badge, Spinner), Molecules (PhotoCard, ProgressBar, UploadStatusIndicator, TagChip, EmptyState), Organisms (PhotoGrid, UploadDashboard, SettingsPanel, Lightbox). Technical Notes: Atomic Design methodology, Accessibility (ARIA labels, screen reader support), Light/dark theme via context, Storybook documentation, React Native for Web.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ARCHITECTURE-BMAD.md</path>
+        <title>Architecture Overview</title>
+        <section>Frontend Architecture</section>
+        <snippet>React Native for Web chosen for cross-platform development with single codebase. TypeScript for type safety. Component-based architecture with Atomic Design methodology. Theme context for light/dark mode switching. State management with Context API and local component state. Testing with Jest and React Native Testing Library.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <!-- No existing frontend code - this is the foundation story -->
+    </code>
+
+    <dependencies>
+      <frontend>
+        <required>
+          <package name="react-native" version="latest" />
+          <package name="react-native-web" version="latest" />
+          <package name="typescript" version="^5.0.0" />
+          <package name="@types/react" version="latest" />
+          <package name="@types/react-native" version="latest" />
+        </required>
+        <icons>
+          <package name="lucide-react-native" version="latest" note="Recommended for React Native compatibility" />
+          <package name="@expo/vector-icons" version="latest" note="Alternative icon library" />
+        </icons>
+        <storybook>
+          <package name="@storybook/react-native" version="latest" />
+          <package name="@storybook/addon-essentials" version="latest" />
+        </storybook>
+        <testing>
+          <package name="jest" version="latest" />
+          <package name="@testing-library/react-native" version="latest" />
+          <package name="@testing-library/jest-native" version="latest" />
+        </testing>
+        <devTools>
+          <package name="@react-native-community/eslint-config" version="latest" />
+          <package name="prettier" version="latest" />
+        </devTools>
+      </frontend>
+
+      <infrastructure>
+        <!-- CDK infrastructure already exists -->
+        <existing>
+          <package name="aws-cdk-lib" version="^2.100.0" location="infrastructure/cdk" />
+          <package name="constructs" version="^10.0.0" location="infrastructure/cdk" />
+          <package name="typescript" version="^5.0.0" location="infrastructure/cdk" />
+        </existing>
+      </infrastructure>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+### Architecture Constraints
+- **React Native for Web Mandatory**: Single codebase must compile to web, iOS, and Android. No separate React web app allowed.
+- **Atomic Design Methodology**: Components MUST be organized as Atoms → Molecules → Organisms → Templates → Pages
+- **No Direct DOM Manipulation**: Use React Native primitives exclusively (View, Text, Pressable, Image, etc.). No direct DOM access.
+- **Platform-Specific Code**: Isolate using Platform.select() or .web.tsx / .native.tsx file extensions
+
+### Design Constraints
+- **Design Tokens Only**: Components never hard-code colors, spacing, or typography. Always reference design tokens.
+- **Theme-Aware Components**: All components must support light/dark themes via ThemeContext
+- **8px Spacing Grid**: All spacing must be multiples of 8px (4, 8, 12, 16, 24, 32, 48px)
+
+### Accessibility Constraints
+- **WCAG 2.1 Level AA Compliance Mandatory**: Non-negotiable requirement
+- **Keyboard Navigation Required**: All interactive elements must be keyboard accessible (Tab, Enter, Escape, Arrow keys)
+- **Screen Reader Support Required**: Test with NVDA (web), VoiceOver (iOS), TalkBack (Android)
+- **Focus Indicators Mandatory**: 3px solid primary-500, 2px offset on all focusable elements
+- **Touch Target Minimums**: 44×44px (iOS), 48×48dp (Android)
+- **Color Contrast Minimums**: 4.5:1 (body text), 3:1 (large text 18px+)
+
+### Performance Constraints
+- **Component Render Time**: <16ms (60fps target)
+- **Storybook Build Time**: <30 seconds
+- **Bundle Size (web)**: <500KB gzipped
+- **No Animation Jank**: Maintain 60fps during all animations
+
+### Testing Constraints
+- **Unit Tests Required**: All components must have unit tests (Jest + React Native Testing Library)
+- **Storybook Stories Required**: All components must have Storybook stories for visual testing
+- **Cross-Platform Testing Required**: Test on web (Chrome, Firefox, Safari), iOS simulator, Android emulator
+- **Accessibility Testing Required**: Automated (axe DevTools) + manual (screen reader) testing
+
+### Code Style Constraints
+- **TypeScript Strict Mode**: Enable strict type checking
+- **Component File Naming**: PascalCase (e.g., Button.tsx)
+- **Test File Naming**: Component name + .test.tsx (e.g., Button.test.tsx)
+- **Story File Naming**: Component name + .stories.tsx (e.g., Button.stories.tsx)
+  </constraints>
+
+  <interfaces>
+### Theme Interface
+```typescript
+// src/contexts/ThemeContext.tsx
+interface Theme {
+  colors: {
+    primary: { 300: string; 400: string; 500: string; 600: string; 700: string };
+    success: { 100: string; 500: string; 600: string };
+    error: { 100: string; 500: string; 600: string };
+    warning: { 100: string; 500: string; 600: string };
+    info: { 100: string; 500: string };
+    gray: { 50: string; 100: string; 200: string; 300: string; 400: string; 500: string; 600: string; 700: string; 800: string; 900: string };
+    white: string;
+    black: string;
+  };
+  typography: {
+    fontFamily: { primary: string; mono: string };
+    fontSize: { xs: number; sm: number; base: number; lg: number; xl: number; '2xl': number; '3xl': number; '4xl': number; '5xl': number; '6xl': number };
+    fontWeight: { thin: string; light: string; normal: string; medium: string; semibold: string; bold: string; extrabold: string };
+    lineHeight: { tight: number; normal: number; relaxed: number };
+  };
+  spacing: { 0: number; 1: number; 2: number; 3: number; 4: number; 5: number; 6: number; 8: number; 10: number; 12: number; 16: number; 20: number };
+  shadows: { xs: string; sm: string; base: string; md: string; lg: string; xl: string };
+  borderRadius: { none: number; sm: number; base: number; md: number; lg: number; xl: number; full: number };
+}
+
+interface ThemeContextValue {
+  theme: Theme;
+  isDark: boolean;
+  toggleTheme: () => void;
+  setTheme: (mode: 'light' | 'dark' | 'auto') => void;
+}
+```
+
+### Component Props Interfaces
+```typescript
+// Button Component
+interface ButtonProps {
+  variant?: 'primary' | 'secondary' | 'text' | 'fab';
+  size?: 'small' | 'medium' | 'large';
+  disabled?: boolean;
+  loading?: boolean;
+  onPress: () => void;
+  children: React.ReactNode;
+  accessibilityLabel?: string;
+  testID?: string;
+}
+
+// Input Component
+interface InputProps {
+  type?: 'text' | 'email' | 'password';
+  label?: string;
+  placeholder?: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  error?: string;
+  disabled?: boolean;
+  accessibilityLabel?: string;
+  testID?: string;
+}
+
+// PhotoCard Component
+interface PhotoCardProps {
+  photoUrl: string;
+  thumbnailUrl: string;
+  filename: string;
+  uploadDate: Date;
+  fileSize: number;
+  tags?: string[];
+  onPress: () => void;
+  loading?: boolean;
+}
+
+// ProgressBar Component
+interface ProgressBarProps {
+  progress: number; // 0-100
+  indeterminate?: boolean;
+  color?: string;
+}
+
+// PhotoGrid Component
+interface PhotoGridProps {
+  photos: PhotoCardProps[];
+  onPhotoPress: (photoId: string) => void;
+  loading?: boolean;
+  onLoadMore?: () => void;
+}
+
+// UploadDashboard Component
+interface UploadDashboardProps {
+  uploads: UploadItem[];
+  onCancelUpload: (uploadId: string) => void;
+  onRetryUpload: (uploadId: string) => void;
+  onCancelAll: () => void;
+  minimized?: boolean;
+  onToggleMinimize: () => void;
+}
+
+// SettingsPanel Component
+interface SettingsPanelProps {
+  visible: boolean;
+  onClose: () => void;
+  settings: UserSettings;
+  onSaveSettings: (settings: UserSettings) => void;
+}
+
+// Lightbox Component
+interface LightboxProps {
+  visible: boolean;
+  photos: Photo[];
+  initialIndex: number;
+  onClose: () => void;
+  onNavigate: (index: number) => void;
+  onDownload: (photoId: string) => void;
+  onShare: (photoId: string) => void;
+  onTag: (photoId: string) => void;
+  onDelete: (photoId: string) => void;
+}
+```
+  </interfaces>
+
+  <tests>
+    <standards>
+Testing Framework: Jest + React Native Testing Library for unit and integration tests. All components require unit tests covering:
+1. Rendering with default props
+2. All variant/state combinations
+3. Event handlers (onPress, onChangeText, etc.)
+4. Accessibility props (accessibilityLabel, testID)
+5. Theme switching (light/dark mode)
+6. Error states and edge cases
+
+Storybook for visual regression testing and component documentation. Each component requires:
+1. Default story
+2. All variant stories
+3. All state stories (disabled, loading, error, etc.)
+4. Interaction stories (using Storybook's play function)
+
+Cross-platform testing: Test on web browsers (Chrome, Firefox, Safari), iOS simulator (Xcode), Android emulator (Android Studio).
+
+Accessibility testing: Automated scans with axe DevTools + manual testing with screen readers (NVDA, VoiceOver, TalkBack).
+    </standards>
+
+    <locations>
+- Unit tests: src/components/**/*.test.tsx (co-located with component files)
+- Integration tests: __tests__/integration/**/*.test.tsx
+- Storybook stories: .storybook/stories/**/*.stories.tsx
+- E2E tests (future): e2e/**/*.spec.ts
+    </locations>
+
+    <ideas>
+### Atom Component Tests (AC: 8)
+- Button: Test all variants (primary, secondary, text, FAB), disabled state, loading state, press animation, accessibility labels
+- Input: Test text/email/password types, validation states (error, success), disabled state, focus state, accessibility
+- Text: Test all variants (h1-h4, body, caption), theme switching, custom colors
+- Icon: Test sizes (xs-xl), colors, accessibility (aria-hidden vs aria-label)
+- Badge: Test all variants (success, error, warning, info), with/without icon
+- Spinner: Test sizes, colors, animation smoothness
+
+### Molecule Component Tests (AC: 9)
+- PhotoCard: Test loading state (skeleton), hover overlay (web), press animation (mobile), metadata display, tag chips
+- ProgressBar: Test progress values (0, 50, 100), indeterminate state, color customization, smooth transitions
+- UploadStatusIndicator: Test all statuses (queued, uploading, complete, failed), retry/cancel buttons, progress updates
+- TagChip: Test click handler, remove button, hover states, truncation for long tags
+- EmptyState: Test with different messages, CTA button press, responsive sizing
+
+### Organism Component Tests (AC: 10)
+- PhotoGrid: Test responsive columns (2-5), lazy loading, infinite scroll, empty state, skeleton loading, photo press handler
+- UploadDashboard: Test aggregate progress calculation, section collapsing, cancel all, minimize/restore, WebSocket integration
+- SettingsPanel: Test open/close, section toggles, slider control, save button, settings persistence
+- Lightbox: Test navigation (arrow keys web, swipe mobile), zoom (pinch/wheel), action buttons, metadata overlay, close (X/Escape/swipe down)
+
+### Accessibility Tests (AC: 22-28)
+- Contrast ratio validation: Automated check with axe DevTools for all color combinations
+- Keyboard navigation: Tab through all components, Enter/Space to activate, Escape to close modals
+- Screen reader: Test ARIA labels, live regions for status updates, semantic HTML/React Native elements
+- Touch targets: Measure all touchable elements (minimum 44×44px iOS, 48×48dp Android)
+- Focus indicators: Verify 3px outline, 2px offset on all focusable elements
+
+### Theme Tests (AC: 29-34)
+- Theme toggle: Test light → dark → light transitions, all components update correctly
+- Theme persistence: Test AsyncStorage save/load, theme survives app restart
+- System preference: Test prefers-color-scheme detection, auto theme mode
+- Color contrast: Verify both themes meet WCAG 2.1 AA standards
+
+### Cross-Platform Tests (AC: 11-15)
+- Web compilation: Test react-native-web build, verify all components render
+- iOS compilation: Test Xcode build, verify touch interactions, native components
+- Android compilation: Test Android Studio build, verify Material Design compliance
+- Platform-specific code: Test Platform.select() and .web.tsx/.native.tsx file extensions
+    </ideas>
+  </tests>
+</story-context>

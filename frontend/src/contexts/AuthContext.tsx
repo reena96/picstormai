@@ -34,15 +34,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const accessToken = await AsyncStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
 
       if (accessToken) {
-        // Token exists, user is authenticated
-        // In a real app, we'd decode the JWT to get user info
-        // For now, we'll just set isAuthenticated to true
-        setAuthState({
-          user: null, // TODO: Decode JWT or fetch user profile
-          isAuthenticated: true,
-          isLoading: false,
-          error: null,
-        });
+        // Token exists, fetch user profile
+        try {
+          const user = await apiService.getUserProfile();
+          setAuthState({
+            user,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+        } catch (error) {
+          // If profile fetch fails, still set authenticated but without user data
+          setAuthState({
+            user: null,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+        }
       } else {
         setAuthState({
           ...initialAuthState,
@@ -71,13 +80,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Save tokens
       await apiService.saveTokens(response);
 
-      // Update auth state
-      setAuthState({
-        user: null, // TODO: Decode JWT or fetch user profile
-        isAuthenticated: true,
-        isLoading: false,
-        error: null,
-      });
+      // Fetch user profile
+      try {
+        const user = await apiService.getUserProfile();
+        setAuthState({
+          user,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+        });
+      } catch (profileError) {
+        // Login succeeded but profile fetch failed
+        setAuthState({
+          user: null,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+        });
+      }
     } catch (error: any) {
       const errorMessage = error.response?.data?.message ||
                           error.message ||
@@ -124,11 +144,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return token;
   };
 
+  const markOnboardingComplete = async (): Promise<void> => {
+    try {
+      const updatedUser = await apiService.markOnboardingComplete();
+      setAuthState((prev) => ({
+        ...prev,
+        user: updatedUser,
+      }));
+    } catch (error) {
+      console.error('Failed to mark onboarding complete:', error);
+      // Don't throw - onboarding completion is not critical
+    }
+  };
+
   const value: AuthContextType = {
     ...authState,
     login,
     logout,
     refreshAccessToken,
+    markOnboardingComplete,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

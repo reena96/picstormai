@@ -12,11 +12,12 @@ import { useTheme } from '../hooks/useTheme';
 import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import OnboardingScreen from '../screens/OnboardingScreen';
 
 const Stack = createNativeStackNavigator();
 
 export const RootNavigator: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user, markOnboardingComplete } = useAuth();
   const { theme } = useTheme();
 
   // Show loading screen while checking auth status
@@ -27,6 +28,19 @@ export const RootNavigator: React.FC = () => {
       </View>
     );
   }
+
+  // Determine if we should show onboarding
+  const shouldShowOnboarding = isAuthenticated && user && !user.hasSeenOnboarding;
+
+  const handleOnboardingComplete = async () => {
+    await markOnboardingComplete();
+    // Navigation will automatically update when user state changes
+  };
+
+  const handleOnboardingSkip = async () => {
+    await markOnboardingComplete();
+    // Navigation will automatically update when user state changes
+  };
 
   return (
     <NavigationContainer>
@@ -40,6 +54,18 @@ export const RootNavigator: React.FC = () => {
           // Auth Stack
           <Stack.Group>
             <Stack.Screen name="Login" component={LoginScreen} />
+          </Stack.Group>
+        ) : shouldShowOnboarding ? (
+          // Onboarding Stack
+          <Stack.Group>
+            <Stack.Screen name="Onboarding">
+              {() => (
+                <OnboardingScreen
+                  onComplete={handleOnboardingComplete}
+                  onSkip={handleOnboardingSkip}
+                />
+              )}
+            </Stack.Screen>
           </Stack.Group>
         ) : (
           // Main Stack

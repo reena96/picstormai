@@ -5,7 +5,7 @@
 
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LoginRequest, LoginResponse, RefreshTokenResponse } from '../types/auth';
+import { LoginRequest, LoginResponse, RefreshTokenResponse, User } from '../types/auth';
 
 // Storage keys
 export const STORAGE_KEYS = {
@@ -158,6 +158,16 @@ class ApiService {
 
   async getAccessToken(): Promise<string | null> {
     return AsyncStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+  }
+
+  async getUserProfile(): Promise<User> {
+    const response = await this.axiosInstance.get<User>('/api/user/profile');
+    return response.data;
+  }
+
+  async markOnboardingComplete(): Promise<User> {
+    const response = await this.axiosInstance.patch<User>('/api/user/onboarding');
+    return response.data;
   }
 
   getInstance(): AxiosInstance {

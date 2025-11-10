@@ -139,4 +139,35 @@ class UserTest {
 
         assertThat(user.getDisplayName()).isEqualTo("Jane Smith");
     }
+
+    @Test
+    void shouldMarkOnboardingComplete() {
+        Email email = Email.of("user@example.com");
+        User user = User.create(email, "password123", "John Doe");
+
+        assertThat(user.isHasSeenOnboarding()).isFalse();
+
+        user.markOnboardingComplete();
+
+        assertThat(user.isHasSeenOnboarding()).isTrue();
+    }
+
+    @Test
+    void shouldBeIdempotentWhenMarkingOnboardingComplete() {
+        Email email = Email.of("user@example.com");
+        User user = User.create(email, "password123", "John Doe");
+
+        user.markOnboardingComplete();
+        user.markOnboardingComplete(); // Should not throw exception
+
+        assertThat(user.isHasSeenOnboarding()).isTrue();
+    }
+
+    @Test
+    void shouldHaveOnboardingFalseForNewUser() {
+        Email email = Email.of("user@example.com");
+        User user = User.create(email, "password123", "John Doe");
+
+        assertThat(user.isHasSeenOnboarding()).isFalse();
+    }
 }

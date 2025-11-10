@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, Modal, Image, Pressable, StyleSheet, ViewStyle, Platform, Dimensions } from 'react-native';
+import { View, Modal, Image, Pressable, StyleSheet, ViewStyle, ImageStyle, Platform, Dimensions } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { Text } from '../atoms/Text';
 import { Button } from '../atoms/Button';
@@ -96,7 +96,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
     alignItems: 'center',
   };
 
-  const imageStyle: ViewStyle = {
+  const imageStyle: ImageStyle = {
     maxWidth: dimensions.width * 0.9,
     maxHeight: dimensions.height * 0.9,
     aspectRatio: 1,

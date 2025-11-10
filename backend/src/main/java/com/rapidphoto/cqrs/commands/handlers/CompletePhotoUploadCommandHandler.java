@@ -35,7 +35,7 @@ public class CompletePhotoUploadCommandHandler {
         this.eventPublisher = eventPublisher;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Mono<UUID> handle(CompletePhotoUploadCommand command) {
         return photoRepository.findById(command.photoId())
             .switchIfEmpty(Mono.error(new IllegalArgumentException("Photo not found: " + command.photoId())))

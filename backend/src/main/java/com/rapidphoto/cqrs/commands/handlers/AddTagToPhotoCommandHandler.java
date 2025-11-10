@@ -28,7 +28,7 @@ public class AddTagToPhotoCommandHandler {
         this.eventPublisher = eventPublisher;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Mono<UUID> handle(AddTagToPhotoCommand command) {
         return photoRepository.findById(command.photoId())
             .switchIfEmpty(Mono.error(new IllegalArgumentException("Photo not found: " + command.photoId())))

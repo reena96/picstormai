@@ -5,7 +5,7 @@
  */
 
 import React, { useState } from 'react';
-import { View, Image, Pressable, StyleSheet, ViewStyle, Platform } from 'react-native';
+import { View, Image, Pressable, StyleSheet, ViewStyle, ImageStyle, Platform } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { Text } from '../atoms/Text';
 import { Spinner } from '../atoms/Spinner';
@@ -47,7 +47,7 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({
     ...theme.shadows.sm,
   };
 
-  const imageStyle: ViewStyle = {
+  const imageStyle: ImageStyle = {
     width: '100%',
     height: '100%',
   };

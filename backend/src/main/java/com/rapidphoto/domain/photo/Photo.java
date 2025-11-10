@@ -2,6 +2,7 @@ package com.rapidphoto.domain.photo;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
@@ -17,7 +18,7 @@ import java.util.UUID;
  * No setters - all modifications through business methods.
  */
 @Table("photos")
-public class Photo {
+public class Photo implements Persistable<UUID> {
 
     @Id
     private UUID id;
@@ -38,8 +39,13 @@ public class Photo {
     @Transient
     private Set<UUID> tagIds = new HashSet<>(); // Tags managed separately
 
-    // Package-private constructor for persistence
-    Photo() {}
+    @Transient
+    private boolean isNew = true;
+
+    // Package-private constructor for persistence (entities loaded from DB are not new)
+    Photo() {
+        this.isNew = false;
+    }
 
     private Photo(UUID id, UUID userId, UUID sessionId, String filename, long fileSize) {
         this.id = id;
@@ -259,5 +265,11 @@ public class Photo {
 
     public Instant getDeletedAt() {
         return deletedAt;
+    }
+
+    // Persistable interface methods
+    @Override
+    public boolean isNew() {
+        return isNew;
     }
 }

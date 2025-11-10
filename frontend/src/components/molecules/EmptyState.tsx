@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { View, ViewStyle } from 'react-native';
+import { View, ViewStyle, TextStyle } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { Text } from '../atoms/Text';
 import { Button } from '../atoms/Button';
@@ -46,12 +46,12 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     opacity: 0.6,
   };
 
-  const headlineStyle: ViewStyle = {
+  const headlineStyle: TextStyle = {
     marginBottom: theme.spacing[2],
     textAlign: 'center',
   };
 
-  const subtextStyle: ViewStyle = {
+  const subtextStyle: TextStyle = {
     marginBottom: theme.spacing[6],
     textAlign: 'center',
     maxWidth: 400,

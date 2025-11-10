@@ -1,17 +1,19 @@
 module.exports = {
-  preset: 'react-native',
   testEnvironment: 'jsdom',
-  setupFilesAfterEnv: ['@testing-library/jest-native/extend-expect'],
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+  setupFiles: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.afterEnv.js'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'd.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^react-native$': 'react-native-web',
+    // Mock React Native built-ins that we don't need for web testing
+    '^react-native/Libraries/(.*)$': '<rootDir>/node_modules/react-native-web/dist/$1',
   },
   transform: {
-    '^.+\\.(ts|tsx)$': 'babel-jest',
+    '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|react-native-web|lucide-react-native)/)',
+    'node_modules/(?!(react-native-web|lucide-react-native)/)',
   ],
   testMatch: [
     '**/__tests__/**/*.test.(ts|tsx)',

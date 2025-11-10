@@ -1,6 +1,8 @@
 package com.rapidphoto.domain.upload;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.Instant;
@@ -12,7 +14,7 @@ import java.util.UUID;
  * No setters - all modifications through business methods.
  */
 @Table("upload_sessions")
-public class UploadSession {
+public class UploadSession implements Persistable<UUID> {
 
     @Id
     private UUID id;
@@ -24,8 +26,13 @@ public class UploadSession {
     private Instant createdAt;
     private Instant completedAt;
 
-    // Package-private constructor for persistence
-    UploadSession() {}
+    @Transient
+    private boolean isNew = true;
+
+    // Package-private constructor for persistence (entities loaded from DB are not new)
+    UploadSession() {
+        this.isNew = false;
+    }
 
     private UploadSession(UUID id, UUID userId) {
         this.id = id;
@@ -172,5 +179,11 @@ public class UploadSession {
 
     public Instant getCompletedAt() {
         return completedAt;
+    }
+
+    // Persistable interface methods
+    @Override
+    public boolean isNew() {
+        return isNew;
     }
 }

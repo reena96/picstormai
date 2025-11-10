@@ -22,11 +22,11 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
+import java.net.URI;
 import java.time.Duration;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
 /**
  * End-to-end integration test validating the entire infrastructure stack.
@@ -56,11 +56,12 @@ class EndToEndIntegrationTest extends BaseIntegrationTest {
     @BeforeAll
     static void setupS3() {
         s3Client = S3Client.builder()
-            .endpointOverride(localstack.getEndpointOverride(S3))
+            .endpointOverride(URI.create("http://localhost:4566"))
             .credentialsProvider(StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+                AwsBasicCredentials.create("test", "test")
             ))
-            .region(Region.of(localstack.getRegion()))
+            .region(Region.US_EAST_1)
+            .forcePathStyle(true)
             .build();
 
         try {

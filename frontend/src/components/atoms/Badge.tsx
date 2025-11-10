@@ -94,7 +94,7 @@ export const Badge: React.FC<BadgeProps> = ({
 
   const textStyle: TextStyle = {
     fontSize: theme.typography.fontSize.xs,
-    fontWeight: theme.typography.fontWeight.semibold,
+    fontWeight: theme.typography.fontWeight.semibold as TextStyle['fontWeight'],
     fontFamily: theme.typography.fontFamily.primary,
     ...variantStyles.text,
   };
@@ -103,7 +103,7 @@ export const Badge: React.FC<BadgeProps> = ({
     <View style={[containerStyle, style]} testID={testID} accessibilityRole="text">
       {icon && (
         <View style={{ marginRight: theme.spacing[1] }}>
-          <Icon icon={icon} size="xs" color={variantStyles.text.color} decorative />
+          <Icon icon={icon} size="xs" color={variantStyles.text.color as string} decorative />
         </View>
       )}
       <Text style={textStyle}>{children}</Text>

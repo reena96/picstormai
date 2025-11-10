@@ -49,7 +49,7 @@ export const Input: React.FC<InputProps> = ({
 
   const labelStyle: TextStyle = {
     fontSize: theme.typography.fontSize.sm,
-    fontWeight: theme.typography.fontWeight.medium,
+    fontWeight: theme.typography.fontWeight.medium as TextStyle['fontWeight'],
     color: theme.colors.text.primary,
     marginBottom: theme.spacing[1],
     fontFamily: theme.typography.fontFamily.primary,
@@ -76,7 +76,6 @@ export const Input: React.FC<InputProps> = ({
     color: disabled ? theme.colors.text.disabled : theme.colors.text.primary,
     fontFamily: theme.typography.fontFamily.primary,
     paddingVertical: theme.spacing[2],
-    outlineStyle: 'none', // Remove default web outline (we have custom focus state)
   };
 
   const errorStyle: TextStyle = {
@@ -140,7 +139,7 @@ export const Input: React.FC<InputProps> = ({
         )}
       </View>
       {error && (
-        <Text style={errorStyle} accessibilityRole="alert" accessibilityLive="polite">
+        <Text style={errorStyle} accessibilityRole="alert">
           {error}
         </Text>
       )}

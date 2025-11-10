@@ -1,5 +1,6 @@
 package com.rapidphoto.health;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.stereotype.Component;
@@ -16,10 +17,10 @@ public class S3HealthIndicator extends AbstractHealthIndicator {
     private final S3Client s3Client;
     private final String bucketName;
 
-    public S3HealthIndicator(S3Client s3Client) {
+    public S3HealthIndicator(S3Client s3Client,
+                            @Value("${aws.s3.bucket-name}") String bucketName) {
         this.s3Client = s3Client;
-        // Default bucket name - can be injected from configuration
-        this.bucketName = "rapidphoto-uploads";
+        this.bucketName = bucketName;
     }
 
     @Override

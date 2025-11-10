@@ -28,7 +28,7 @@ public class StartUploadSessionCommandHandler {
         this.eventPublisher = eventPublisher;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Mono<UUID> handle(StartUploadSessionCommand command) {
         // Create new session
         UploadSession session = UploadSession.start(command.userId());

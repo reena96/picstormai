@@ -28,7 +28,7 @@ public class LoginCommandHandler {
         this.eventPublisher = eventPublisher;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Mono<UUID> handle(LoginCommand command) {
         return userRepository.findByEmail(command.email())
             .switchIfEmpty(Mono.error(new IllegalArgumentException("Invalid email or password")))

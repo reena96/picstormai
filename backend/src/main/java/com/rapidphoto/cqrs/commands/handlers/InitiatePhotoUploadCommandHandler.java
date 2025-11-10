@@ -28,7 +28,7 @@ public class InitiatePhotoUploadCommandHandler {
         this.eventPublisher = eventPublisher;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Mono<UUID> handle(InitiatePhotoUploadCommand command) {
         // Create new photo
         Photo photo = Photo.initiate(

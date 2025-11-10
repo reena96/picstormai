@@ -24,7 +24,6 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
 /**
  * Integration tests for S3 using LocalStack.
@@ -38,22 +37,23 @@ class S3IntegrationTest extends BaseIntegrationTest {
 
     @BeforeAll
     static void setupS3Client() {
-        // Create S3 client configured for LocalStack
+        // Create S3 client configured for running LocalStack container
         s3Client = S3Client.builder()
-            .endpointOverride(localstack.getEndpointOverride(S3))
+            .endpointOverride(URI.create("http://localhost:4566"))
             .credentialsProvider(StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+                AwsBasicCredentials.create("test", "test")
             ))
-            .region(Region.of(localstack.getRegion()))
+            .region(Region.US_EAST_1)
+            .forcePathStyle(true)
             .build();
 
         // Create S3 Presigner for generating pre-signed URLs
         s3Presigner = S3Presigner.builder()
-            .endpointOverride(localstack.getEndpointOverride(S3))
+            .endpointOverride(URI.create("http://localhost:4566"))
             .credentialsProvider(StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+                AwsBasicCredentials.create("test", "test")
             ))
-            .region(Region.of(localstack.getRegion()))
+            .region(Region.US_EAST_1)
             .build();
 
         // Create test bucket

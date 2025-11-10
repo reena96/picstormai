@@ -5,11 +5,19 @@
 
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+import { render as renderDOM } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
 import { Button } from './Button';
 import { ThemeProvider } from '../../contexts/ThemeContext';
 
+expect.extend(toHaveNoViolations);
+
 const renderWithTheme = (component: React.ReactElement) => {
   return render(<ThemeProvider>{component}</ThemeProvider>);
+};
+
+const renderWithThemeDOM = (component: React.ReactElement) => {
+  return renderDOM(<ThemeProvider>{component}</ThemeProvider>);
 };
 
 describe('Button', () => {
@@ -142,6 +150,85 @@ describe('Button', () => {
         <Button testID="test-button" onPress={() => {}}>Test</Button>
       );
       expect(getByTestId('test-button')).toBeTruthy();
+    });
+  });
+
+  describe('Accessibility - WCAG 2.1 AA Compliance', () => {
+    it('should have no accessibility violations for primary button', async () => {
+      const { container } = renderWithThemeDOM(
+        <Button variant="primary" onPress={() => {}}>Primary Button</Button>
+      );
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have no accessibility violations for secondary button', async () => {
+      const { container } = renderWithThemeDOM(
+        <Button variant="secondary" onPress={() => {}}>Secondary Button</Button>
+      );
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have no accessibility violations for text button', async () => {
+      const { container } = renderWithThemeDOM(
+        <Button variant="text" onPress={() => {}}>Text Button</Button>
+      );
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have no accessibility violations for FAB button', async () => {
+      const { container } = renderWithThemeDOM(
+        <Button variant="fab" onPress={() => {}}>+</Button>
+      );
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have no accessibility violations for disabled button', async () => {
+      const { container } = renderWithThemeDOM(
+        <Button disabled onPress={() => {}}>Disabled Button</Button>
+      );
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have no accessibility violations for loading button', async () => {
+      const { container } = renderWithThemeDOM(
+        <Button loading onPress={() => {}}>Loading Button</Button>
+      );
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have no accessibility violations for button with custom accessibility label', async () => {
+      const { container } = renderWithThemeDOM(
+        <Button
+          onPress={() => {}}
+          accessibilityLabel="Submit form"
+        >
+          Submit
+        </Button>
+      );
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have no accessibility violations for small button', async () => {
+      const { container } = renderWithThemeDOM(
+        <Button size="small" onPress={() => {}}>Small Button</Button>
+      );
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
+
+    it('should have no accessibility violations for large button', async () => {
+      const { container } = renderWithThemeDOM(
+        <Button size="large" onPress={() => {}}>Large Button</Button>
+      );
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
     });
   });
 });

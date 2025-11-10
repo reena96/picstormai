@@ -40,7 +40,6 @@ export const Spinner: React.FC<SpinnerProps> = ({
       style={style}
       accessibilityRole="progressbar"
       accessibilityLabel={accessibilityLabel}
-      accessibilityLive="polite"
       testID={testID}
     >
       <ActivityIndicator size={spinnerSize} color={spinnerColor} />

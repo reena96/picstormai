@@ -34,49 +34,49 @@ export const Text: React.FC<TextProps> = ({
     const variantStyles: Record<string, TextStyle> = {
       h1: {
         fontSize: theme.typography.fontSize['4xl'],
-        fontWeight: theme.typography.fontWeight.bold,
+        fontWeight: theme.typography.fontWeight.bold as TextStyle['fontWeight'],
         lineHeight: theme.typography.fontSize['4xl'] * theme.typography.lineHeight.tight,
         color: theme.colors.text.primary,
       },
       h2: {
         fontSize: theme.typography.fontSize['3xl'],
-        fontWeight: theme.typography.fontWeight.bold,
+        fontWeight: theme.typography.fontWeight.bold as TextStyle['fontWeight'],
         lineHeight: theme.typography.fontSize['3xl'] * theme.typography.lineHeight.tight,
         color: theme.colors.text.primary,
       },
       h3: {
         fontSize: theme.typography.fontSize['2xl'],
-        fontWeight: theme.typography.fontWeight.semibold,
+        fontWeight: theme.typography.fontWeight.semibold as TextStyle['fontWeight'],
         lineHeight: theme.typography.fontSize['2xl'] * theme.typography.lineHeight.tight,
         color: theme.colors.text.primary,
       },
       h4: {
         fontSize: theme.typography.fontSize.xl,
-        fontWeight: theme.typography.fontWeight.semibold,
+        fontWeight: theme.typography.fontWeight.semibold as TextStyle['fontWeight'],
         lineHeight: theme.typography.fontSize.xl * theme.typography.lineHeight.normal,
         color: theme.colors.text.primary,
       },
       body: {
         fontSize: theme.typography.fontSize.base,
-        fontWeight: theme.typography.fontWeight.normal,
+        fontWeight: theme.typography.fontWeight.normal as TextStyle['fontWeight'],
         lineHeight: theme.typography.fontSize.base * theme.typography.lineHeight.normal,
         color: theme.colors.text.primary,
       },
       bodySmall: {
         fontSize: theme.typography.fontSize.sm,
-        fontWeight: theme.typography.fontWeight.normal,
+        fontWeight: theme.typography.fontWeight.normal as TextStyle['fontWeight'],
         lineHeight: theme.typography.fontSize.sm * theme.typography.lineHeight.normal,
         color: theme.colors.text.secondary,
       },
       caption: {
         fontSize: theme.typography.fontSize.xs,
-        fontWeight: theme.typography.fontWeight.normal,
+        fontWeight: theme.typography.fontWeight.normal as TextStyle['fontWeight'],
         lineHeight: theme.typography.fontSize.xs * theme.typography.lineHeight.normal,
         color: theme.colors.text.secondary,
       },
       label: {
         fontSize: theme.typography.fontSize.sm,
-        fontWeight: theme.typography.fontWeight.medium,
+        fontWeight: theme.typography.fontWeight.medium as TextStyle['fontWeight'],
         lineHeight: theme.typography.fontSize.sm * theme.typography.lineHeight.normal,
         color: theme.colors.text.primary,
       },
@@ -104,7 +104,7 @@ export const Text: React.FC<TextProps> = ({
     ...getVariantStyle(),
     fontFamily: theme.typography.fontFamily.primary,
     textAlign: align,
-    ...(weight && { fontWeight: theme.typography.fontWeight[weight] }),
+    ...(weight && { fontWeight: theme.typography.fontWeight[weight] as TextStyle['fontWeight'] }),
     ...(color && { color }),
   };
 

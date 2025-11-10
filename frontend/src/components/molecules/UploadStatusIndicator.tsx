@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { View, Image, StyleSheet, ViewStyle } from 'react-native';
+import { View, Image, StyleSheet, ViewStyle, ImageStyle } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { Text } from '../atoms/Text';
 import { Badge } from '../atoms/Badge';
@@ -55,7 +55,7 @@ export const UploadStatusIndicator: React.FC<UploadStatusIndicatorProps> = ({
     marginBottom: theme.spacing[2],
   };
 
-  const thumbnailStyle: ViewStyle = {
+  const thumbnailStyle: ImageStyle = {
     width: 48,
     height: 48,
     borderRadius: theme.borderRadius.sm,

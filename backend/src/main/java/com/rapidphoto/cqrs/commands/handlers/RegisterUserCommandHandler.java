@@ -35,7 +35,7 @@ public class RegisterUserCommandHandler {
         this.eventPublisher = eventPublisher;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Mono<UUID> handle(RegisterUserCommand command) {
         return userRepository.existsByEmail(command.email())
             .flatMap(exists -> {

@@ -28,7 +28,7 @@ public class RemoveTagFromPhotoCommandHandler {
         this.eventPublisher = eventPublisher;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Mono<UUID> handle(RemoveTagFromPhotoCommand command) {
         return photoRepository.findById(command.photoId())
             .switchIfEmpty(Mono.error(new IllegalArgumentException("Photo not found: " + command.photoId())))

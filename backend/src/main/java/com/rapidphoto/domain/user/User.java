@@ -2,6 +2,8 @@ package com.rapidphoto.domain.user;
 
 import com.rapidphoto.domain.shared.Email;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,7 +17,7 @@ import java.util.UUID;
  * No setters - all modifications through business methods.
  */
 @Table("users")
-public class User {
+public class User implements Persistable<UUID> {
 
     private static final PasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
 
@@ -29,8 +31,13 @@ public class User {
     private Instant updatedAt;
     private Instant lastLoginAt;
 
-    // Package-private constructor for persistence framework
-    User() {}
+    @Transient
+    private boolean isNew = true;
+
+    // Package-private constructor for persistence framework (entities loaded from DB are not new)
+    User() {
+        this.isNew = false;
+    }
 
     private User(UUID id, Email email, String passwordHash, String displayName) {
         this.id = id;
@@ -126,5 +133,11 @@ public class User {
 
     public Instant getLastLoginAt() {
         return lastLoginAt;
+    }
+
+    // Persistable interface methods
+    @Override
+    public boolean isNew() {
+        return isNew;
     }
 }

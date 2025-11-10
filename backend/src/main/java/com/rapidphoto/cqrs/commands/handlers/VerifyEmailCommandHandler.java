@@ -28,7 +28,7 @@ public class VerifyEmailCommandHandler {
         this.eventPublisher = eventPublisher;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Mono<UUID> handle(VerifyEmailCommand command) {
         return userRepository.findById(command.userId())
             .switchIfEmpty(Mono.error(new IllegalArgumentException("User not found: " + command.userId())))

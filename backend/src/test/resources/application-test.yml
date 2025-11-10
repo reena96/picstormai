@@ -1,0 +1,26 @@
+# Test configuration - uses running Docker containers
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/rapidphoto
+    username: rapidphoto_admin
+    password: password
+
+  flyway:
+    url: jdbc:postgresql://localhost:5432/rapidphoto
+    user: rapidphoto_admin
+    password: password
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+aws:
+  s3:
+    endpoint: http://localhost:4566
+    region: us-east-1
+  accessKeyId: test
+  secretAccessKey: test
+
+s3:
+  bucket-name: rapidphoto-uploads

@@ -86,7 +86,7 @@ export const Button: React.FC<ButtonProps> = ({
   const getTextStyle = (): TextStyle => {
     const baseTextStyle: TextStyle = {
       fontFamily: theme.typography.fontFamily.primary,
-      fontWeight: theme.typography.fontWeight.semibold,
+      fontWeight: theme.typography.fontWeight.semibold as TextStyle['fontWeight'],
     };
 
     const sizeTextStyles: Record<string, TextStyle> = {
@@ -113,14 +113,16 @@ export const Button: React.FC<ButtonProps> = ({
       disabled={disabled || loading}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel || (typeof children === 'string' ? children : undefined)}
-      accessibilityState={{ disabled: disabled || loading }}
+      accessibilityState={{ disabled: disabled || loading, busy: loading }}
       testID={testID}
       style={({ pressed }) => [getButtonStyle(pressed), style]}
+      aria-busy={loading}
     >
       {loading ? (
         <ActivityIndicator
           size="small"
           color={variant === 'primary' || variant === 'fab' ? theme.colors.white : theme.colors.primary[500]}
+          accessibilityLabel="Loading"
         />
       ) : (
         <Text style={getTextStyle()}>{children}</Text>

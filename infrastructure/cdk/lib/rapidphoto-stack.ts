@@ -15,6 +15,7 @@ import * as logs from 'aws-cdk-lib/aws-logs';
 
 interface RapidPhotoStackProps extends cdk.StackProps {
   environment: 'dev' | 'staging' | 'prod';
+  frontendDomain?: string; // Optional: Frontend domain for production CORS
 }
 
 export class RapidPhotoStack extends cdk.Stack {
@@ -40,7 +41,10 @@ export class RapidPhotoStack extends cdk.Stack {
       encryption: s3.BucketEncryption.S3_MANAGED,
       cors: [
         {
-          allowedOrigins: ['*'], // TODO: Restrict to your domain in production
+          // Environment-specific CORS: wildcard for dev/staging, restricted for prod
+          allowedOrigins: environment === 'prod' && props.frontendDomain
+            ? [`https://${props.frontendDomain}`]
+            : ['*'],
           allowedMethods: [
             s3.HttpMethods.GET,
             s3.HttpMethods.PUT,

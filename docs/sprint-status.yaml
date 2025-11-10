@@ -38,12 +38,13 @@ stories:
 
   - id: "0.6"
     name: "Infrastructure Integration Tests"
-    status: "backlog"
+    status: "done"
     assigned_to: "main"
     dependencies: ["0.1", "0.2", "0.3", "0.4", "0.5"]
+    completed: "2025-11-09"
 
 progress:
   total_stories: 6
-  completed: 1
+  completed: 2
   in_progress: 0
-  percentage: 17
+  percentage: 33

@@ -23,6 +23,34 @@ spring:
     user: ${DB_USERNAME:rapidphoto_admin}
     password: ${DB_PASSWORD:password}
 
+  # Redis Configuration
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+
+# AWS S3 Configuration
+aws:
+  s3:
+    endpoint: ${AWS_S3_ENDPOINT:}
+    region: ${AWS_REGION:us-east-1}
+    bucket-name: ${S3_BUCKET_NAME:rapidphoto-uploads}
+  accessKeyId: ${AWS_ACCESS_KEY_ID:}
+  secretAccessKey: ${AWS_SECRET_ACCESS_KEY:}
+
+# Spring Boot Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+
 server:
   port: 8080
 

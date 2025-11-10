@@ -1,0 +1,178 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>0</epicId>
+    <storyId>6</storyId>
+    <title>Infrastructure Integration Tests</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-09</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/0-6-infrastructure-integration-tests.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>a QA engineer</asA>
+    <iWant>to validate infrastructure connectivity and configuration</iWant>
+    <soThat>deployment is confident and reliable</soThat>
+    <tasks>
+      - Task 1: Setup Testcontainers Infrastructure (AC: #5, #6, #7)
+      - Task 2: Database Integration Tests (AC: #1)
+      - Task 3: Redis Integration Tests (AC: #2)
+      - Task 4: S3 Integration Tests (AC: #3)
+      - Task 5: Health Check Implementation (AC: #4)
+      - Task 6: End-to-End Integration Test (AC: #1, #2, #3, #4)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. Database Tests: Connection to PostgreSQL, migrations applied successfully, CRUD operations work, constraints enforced (foreign keys, unique, check), indexes exist and are used
+    2. Redis Tests: Connection test (PING/PONG), session storage (set/get), TTL (time-to-live) expiration works
+    3. S3 Tests: Upload files to S3 bucket, download files from S3, pre-signed URL generation, CORS configuration validated
+    4. Health Check: /actuator/health endpoint returns UP, all components (database, redis, s3) report healthy
+    5. Testcontainers Setup: PostgreSQL container, Redis container, LocalStack container for S3 testing
+    6. Test Isolation: Each test can run independently, tests clean up resources, no shared state between tests
+    7. CI/CD Ready: Tests run without external dependencies, all infrastructure mocked or containerized
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/epics/epic-0-foundation-infrastructure.md</path>
+        <title>Epic 0: Foundation & Infrastructure</title>
+        <section>Story 0.6: Infrastructure Integration Tests</section>
+        <snippet>Test Coverage: Database (connection, migrations, CRUD, constraints), Redis (PING/PONG, session storage, TTL), S3 (upload, download, pre-signed URLs, CORS), Health Check (/actuator/health returns UP for all components). Use Testcontainers for Docker-based tests, LocalStack for S3 testing, PostgreSQL and Redis containers.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ARCHITECTURE-BMAD.md</path>
+        <title>RapidPhotoUpload Architecture</title>
+        <section>Section 23.1 Health Checks</section>
+        <snippet>Health checks implemented using Spring Boot Actuator at /actuator/health endpoint. Custom health indicators check database (checkDatabase), Redis (checkRedis), and S3 connectivity. ALB checks /actuator/health every 30 seconds with 2/5 threshold.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/0-1-aws-infrastructure-setup.md</path>
+        <title>Story 0.1: AWS Infrastructure Setup</title>
+        <section>AWS Infrastructure Configuration</section>
+        <snippet>Application Load Balancer with health checks configured for /actuator/health endpoint, 30-second interval, 2/5 threshold. Auto Scaling Group (1-10 instances). Health checks via ALB ensure unhealthy instances replaced automatically.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/0-2-database-schema-migrations.md</path>
+        <title>Story 0.2: Database Schema & Migrations</title>
+        <section>Flyway Integration and Testing</section>
+        <snippet>Created comprehensive integration tests using Testcontainers (FlywayMigrationTest.java). Testcontainers integration for isolated database testing. Tests verify all migrations applied, tables created, indexes exist, constraints enforced.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/0-3-domain-model-implementation-ddd.md</path>
+        <title>Story 0.3: Domain Model Implementation (DDD)</title>
+        <section>Integration Testing with Testcontainers</section>
+        <snippet>Created integration tests for repository operations using Testcontainers PostgreSQL. DomainIntegrationTest uses @DataR2dbcTest, @Testcontainers, and PostgreSQL container. Tests verify domain aggregates persist correctly with R2DBC repositories.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>backend/build.gradle</path>
+        <kind>build-config</kind>
+        <symbol>dependencies</symbol>
+        <lines>21-50</lines>
+        <reason>Contains existing Testcontainers dependencies (testcontainers:1.19.3, postgresql:1.19.3, junit-jupiter:1.19.3). Need to add redis and localstack modules for Story 0.6.</reason>
+      </artifact>
+      <artifact>
+        <path>backend/src/test/java/com/rapidphoto/domain/integration/DomainIntegrationTest.java</path>
+        <kind>integration-test</kind>
+        <symbol>DomainIntegrationTest</symbol>
+        <lines>1-291</lines>
+        <reason>Reference implementation for Testcontainers integration test pattern. Shows @Testcontainers, @Container static, @DynamicPropertySource for PostgreSQL. Pattern to follow for new infrastructure tests.</reason>
+      </artifact>
+      <artifact>
+        <path>backend/src/main/java/com/rapidphoto/domain/user/UserRepository.java</path>
+        <kind>repository</kind>
+        <symbol>UserRepository</symbol>
+        <lines>all</lines>
+        <reason>R2DBC repository to test in database integration tests. Verify reactive queries, save/find operations, constraints.</reason>
+      </artifact>
+      <artifact>
+        <path>backend/src/main/java/com/rapidphoto/domain/upload/UploadSessionRepository.java</path>
+        <kind>repository</kind>
+        <symbol>UploadSessionRepository</symbol>
+        <lines>all</lines>
+        <reason>R2DBC repository to test session storage, findActiveSessionsByUserId query, status transitions.</reason>
+      </artifact>
+      <artifact>
+        <path>backend/src/main/java/com/rapidphoto/domain/photo/PhotoRepository.java</path>
+        <kind>repository</kind>
+        <symbol>PhotoRepository</symbol>
+        <lines>all</lines>
+        <reason>R2DBC repository to test photo CRUD, findByUserId, findBySessionId queries, soft delete functionality.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <java>
+        <package name="org.springframework.boot:spring-boot-starter-webflux" version="3.2.0"/>
+        <package name="org.springframework.boot:spring-boot-starter-data-r2dbc" version="3.2.0"/>
+        <package name="org.springframework.boot:spring-boot-starter-actuator" version="3.2.0" note="Required for health indicators"/>
+        <package name="org.postgresql:r2dbc-postgresql" version="latest"/>
+        <package name="org.flywaydb:flyway-core" version="9.22.3"/>
+        <package name="org.testcontainers:testcontainers" version="1.19.3"/>
+        <package name="org.testcontainers:postgresql" version="1.19.3"/>
+        <package name="org.testcontainers:junit-jupiter" version="1.19.3"/>
+        <package name="org.testcontainers:localstack" version="1.19.3" note="Add for S3 testing"/>
+        <package name="com.amazonaws:aws-java-sdk-s3" version="latest" note="Add for S3 client"/>
+        <package name="io.projectreactor:reactor-test" version="latest"/>
+      </java>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - Testing: Use JUnit 5 with Spring Boot Test framework. Integration tests use Testcontainers with static containers shared across test methods (@Container static). Use @DynamicPropertySource to inject container properties.
+    - Testcontainers Pattern: Use @Testcontainers annotation on test classes. Containers start before all tests and stop after all tests. Use PostgreSQL 15-alpine image, Redis 7-alpine image, LocalStack latest image.
+    - Health Indicators: Extend AbstractHealthIndicator for custom health checks. Implement doHealthCheck(Health.Builder builder) method. Return UP or DOWN status with details. Automatically exposed at /actuator/health.
+    - Reactive Testing: Use StepVerifier from reactor-test for reactive streams testing. Use AssertJ for fluent assertions.
+    - Test Isolation: Each test must be independent. Clean up test data between tests (truncate tables or use transactions). No shared state between tests.
+    - CI/CD Ready: Tests must run without external dependencies. All infrastructure mocked or containerized. Docker must be available in CI environment.
+    - Project Structure: Health indicators in backend/src/main/java/com/rapidphoto/health/. Integration tests in backend/src/test/java/com/rapidphoto/infrastructure/. Testcontainer configs in backend/src/test/java/com/rapidphoto/testcontainers/.
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>DatabaseHealthIndicator</name>
+      <kind>Spring Boot Health Indicator</kind>
+      <signature>public class DatabaseHealthIndicator extends AbstractHealthIndicator { protected void doHealthCheck(Health.Builder builder) throws Exception; }</signature>
+      <path>backend/src/main/java/com/rapidphoto/health/DatabaseHealthIndicator.java</path>
+    </interface>
+    <interface>
+      <name>RedisHealthIndicator</name>
+      <kind>Spring Boot Health Indicator</kind>
+      <signature>public class RedisHealthIndicator extends AbstractHealthIndicator { protected void doHealthCheck(Health.Builder builder) throws Exception; }</signature>
+      <path>backend/src/main/java/com/rapidphoto/health/RedisHealthIndicator.java</path>
+    </interface>
+    <interface>
+      <name>S3HealthIndicator</name>
+      <kind>Spring Boot Health Indicator</kind>
+      <signature>public class S3HealthIndicator extends AbstractHealthIndicator { protected void doHealthCheck(Health.Builder builder) throws Exception; }</signature>
+      <path>backend/src/main/java/com/rapidphoto/health/S3HealthIndicator.java</path>
+    </interface>
+    <interface>
+      <name>/actuator/health</name>
+      <kind>REST endpoint</kind>
+      <signature>GET /actuator/health → {"status": "UP", "components": {"database": {"status": "UP"}, "redis": {"status": "UP"}, "s3": {"status": "UP"}}}</signature>
+      <path>Spring Boot Actuator auto-configured endpoint</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Use JUnit 5 with Spring Boot Test framework. Integration tests use Testcontainers with static containers (@Container static) shared across all test methods in a class. Use @DynamicPropertySource to inject container connection properties (host, port, credentials). Follow reactive testing patterns with StepVerifier from reactor-test. Use AssertJ for fluent assertions. Test realistic scenarios including both success and failure cases. Verify error messages and status codes. Tests must be isolated and independent (clean up data between tests).
+    </standards>
+    <locations>
+      - backend/src/test/java/com/rapidphoto/infrastructure/ (new integration tests)
+      - backend/src/test/java/com/rapidphoto/testcontainers/ (container configurations)
+      - backend/src/test/java/com/rapidphoto/domain/integration/ (existing domain integration tests as reference)
+    </locations>
+    <ideas>
+      <idea ac="1">Database Integration Test: Use Testcontainers PostgreSQL. Test connection established. Verify Flyway migrations applied (query flyway_schema_history table). Test CRUD operations on User, UploadSession, Photo entities. Test foreign key constraints (insert photo with invalid session_id, expect failure). Test unique constraints (duplicate email). Test check constraints (invalid email format). Query information_schema to verify indexes exist. Test query performance with and without indexes.</idea>
+      <idea ac="2">Redis Integration Test: Use Testcontainers Redis. Test connection (PING command returns PONG). Test session storage (set key-value with SET command). Test session retrieval (GET command). Test TTL expiration (set key with EXPIRE, wait, verify key expired with TTL command). Test session update (overwrite existing key). Test session deletion (DEL command).</idea>
+      <idea ac="3">S3 Integration Test: Use Testcontainers LocalStack. Configure AWS SDK to use LocalStack endpoint (http://localhost:4566). Create S3 bucket in setup. Test file upload (putObject). Test file download (getObject). Test multipart upload for large files. Generate pre-signed URL (generatePresignedUrl). Test pre-signed URL works (HTTP GET to URL). Test pre-signed URL expiration (generate with 1 second TTL, wait, verify expired). Test CORS configuration (OPTIONS request to S3 endpoint).</idea>
+      <idea ac="4">Health Check Test: Start application with @SpringBootTest. Test GET /actuator/health returns 200 OK. Parse JSON response, verify status=UP. Verify components section includes database, redis, s3 with status=UP. Test health returns DOWN when PostgreSQL container stopped. Test health returns DOWN when Redis container stopped. Mock S3 client to throw exception, verify S3 health returns DOWN.</idea>
+      <idea ac="5">Testcontainers Setup: Create BaseIntegrationTest abstract class with @Container static PostgreSQLContainer, RedisContainer, LocalStackContainer. Use @DynamicPropertySource to inject properties. Subclasses inherit container setup. Verify containers start once and are shared across all tests. Test container resource limits (memory, CPU).</idea>
+      <idea ac="6">End-to-End Integration Test: Create User via UserRepository. Create UploadSession via UploadSessionRepository. Store session ID in Redis. Create Photo via PhotoRepository. Upload file to S3 via LocalStack. Verify photo metadata in PostgreSQL includes S3 key. Retrieve session from Redis, verify exists. Call /actuator/health, verify all components UP. Full flow test validates all infrastructure working together.</idea>
+    </ideas>
+  </tests>
+</story-context>

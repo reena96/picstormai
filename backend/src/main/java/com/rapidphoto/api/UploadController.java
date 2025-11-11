@@ -4,7 +4,6 @@ import com.rapidphoto.cqrs.commands.InitiatePhotoUploadCommand;
 import com.rapidphoto.cqrs.commands.StartUploadSessionCommand;
 import com.rapidphoto.cqrs.commands.handlers.InitiatePhotoUploadCommandHandler;
 import com.rapidphoto.cqrs.commands.handlers.StartUploadSessionCommandHandler;
-import com.rapidphoto.security.CurrentUser;
 import com.rapidphoto.security.UserPrincipal;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -58,7 +57,7 @@ public class UploadController {
     @PostMapping("/sessions")
     public Mono<ResponseEntity<Map<String, Object>>> startUploadSession(
         @Valid @RequestBody StartUploadSessionRequest request,
-        @CurrentUser UserPrincipal currentUser
+        @AuthenticationPrincipal UserPrincipal currentUser
     ) {
         var command = new StartUploadSessionCommand(
             currentUser.userId(),
@@ -68,7 +67,7 @@ public class UploadController {
         return startUploadSessionCommandHandler.handle(command)
             .map(sessionId -> ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(Map.of(
+                .<Map<String, Object>>body(Map.of(
                     "sessionId", sessionId.toString(),
                     "status", "IN_PROGRESS"
                 ))
@@ -76,7 +75,7 @@ public class UploadController {
             .onErrorResume(IllegalArgumentException.class, e ->
                 Mono.just(ResponseEntity
                     .badRequest()
-                    .body(Map.of("error", e.getMessage()))
+                    .<Map<String, Object>>body(Map.of("error", e.getMessage()))
                 )
             );
     }
@@ -111,7 +110,7 @@ public class UploadController {
     public Mono<ResponseEntity<Map<String, Object>>> initiatePhotoUpload(
         @PathVariable UUID sessionId,
         @Valid @RequestBody InitiatePhotoUploadRequest request,
-        @CurrentUser UserPrincipal currentUser
+        @AuthenticationPrincipal UserPrincipal currentUser
     ) {
         var command = new InitiatePhotoUploadCommand(
             sessionId,
@@ -126,18 +125,27 @@ public class UploadController {
                 .ok()
                 .body(result)
             )
-            .onErrorResume(IllegalArgumentException.class, e ->
-                Mono.just(ResponseEntity
+            .onErrorResume(IllegalArgumentException.class, e -> {
+                e.printStackTrace();  // Log full stack trace
+                return Mono.just(ResponseEntity
                     .badRequest()
                     .body(Map.of("error", e.getMessage()))
-                )
-            )
-            .onErrorResume(IllegalStateException.class, e ->
-                Mono.just(ResponseEntity
+                );
+            })
+            .onErrorResume(IllegalStateException.class, e -> {
+                e.printStackTrace();  // Log full stack trace
+                return Mono.just(ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body(Map.of("error", e.getMessage()))
-                )
-            );
+                );
+            })
+            .onErrorResume(Exception.class, e -> {
+                e.printStackTrace();  // Log full stack trace for any other exception
+                return Mono.just(ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage() != null ? e.getMessage() : e.getClass().getName()))
+                );
+            });
     }
 
     // Request DTOs

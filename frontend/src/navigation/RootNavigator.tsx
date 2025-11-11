@@ -14,6 +14,7 @@ import HomeScreen from '../screens/HomeScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import UploadScreen from '../screens/UploadScreen';
+import GalleryScreen from '../screens/GalleryScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -70,6 +71,7 @@ export const RootNavigator: React.FC = () => {
           <Stack.Group>
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Upload" component={UploadScreen} />
+            <Stack.Screen name="Gallery" component={GalleryScreen} />
             <Stack.Screen name="Settings" component={SettingsScreen} />
           </Stack.Group>
         )}

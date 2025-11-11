@@ -1,22 +1,13 @@
 package com.rapidphoto.cqrs.dtos;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * Response DTO for login operation.
  * Contains access token, refresh token, and expiration info.
  */
 public record LoginResponse(
-    @JsonProperty("access_token")
     String accessToken,
-
-    @JsonProperty("refresh_token")
     String refreshToken,
-
-    @JsonProperty("expires_in")
     long expiresIn, // Seconds until access token expires
-
-    @JsonProperty("token_type")
     String tokenType // Always "Bearer"
 ) {
     public LoginResponse {

@@ -34,7 +34,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const accessToken = await storage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
 
       if (accessToken) {
-        // Token exists, fetch user profile
+        // Token exists, fetch user profile to validate it
         try {
           const user = await apiService.getUserProfile();
           setAuthState({
@@ -44,10 +44,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             error: null,
           });
         } catch (error) {
-          // If profile fetch fails, still set authenticated but without user data
+          // If profile fetch fails (invalid/expired token), clear tokens and log out
+          console.log('Token validation failed, clearing stored tokens');
+          await storage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+          await storage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
           setAuthState({
             user: null,
-            isAuthenticated: true,
+            isAuthenticated: false,
             isLoading: false,
             error: null,
           });
@@ -90,7 +93,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           error: null,
         });
       } catch (profileError) {
-        // Login succeeded but profile fetch failed
+        // Login succeeded but profile fetch failed - this shouldn't happen normally
+        console.error('Login succeeded but profile fetch failed:', profileError);
         setAuthState({
           user: null,
           isAuthenticated: true,

@@ -5,11 +5,13 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/atoms/Button';
 
 export const HomeScreen: React.FC = () => {
+  const navigation = useNavigation();
   const { theme } = useTheme();
   const { logout, user } = useAuth();
 
@@ -63,6 +65,13 @@ export const HomeScreen: React.FC = () => {
         </Text>
 
         <View style={styles.buttonContainer}>
+          <Button
+            variant="primary"
+            onPress={() => navigation.navigate('Upload' as never)}
+            testID="upload-button"
+          >
+            Upload Photos
+          </Button>
           <Button
             variant="secondary"
             onPress={logout}

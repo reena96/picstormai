@@ -4,7 +4,7 @@
  */
 
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { storage } from '../utils/storage';
 import { LoginRequest, LoginResponse, RefreshTokenResponse, User } from '../types/auth';
 
 // Storage keys
@@ -41,7 +41,7 @@ class ApiService {
     // Request interceptor: attach access token
     this.axiosInstance.interceptors.request.use(
       async (config: InternalAxiosRequestConfig) => {
-        const token = await AsyncStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+        const token = await storage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
         if (token && config.headers) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -110,7 +110,7 @@ class ApiService {
   }
 
   private async refreshToken(): Promise<string> {
-    const refreshToken = await AsyncStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+    const refreshToken = await storage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
     if (!refreshToken) {
       throw new Error('No refresh token available');
     }
@@ -123,17 +123,15 @@ class ApiService {
     const { accessToken, refreshToken: newRefreshToken } = response.data;
 
     // Store new tokens
-    await AsyncStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-    await AsyncStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
+    await storage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+    await storage.setItem(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
 
     return accessToken;
   }
 
   private async clearTokens(): Promise<void> {
-    await AsyncStorage.multiRemove([
-      STORAGE_KEYS.ACCESS_TOKEN,
-      STORAGE_KEYS.REFRESH_TOKEN,
-    ]);
+    await storage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    await storage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
   }
 
   // Public API methods
@@ -152,12 +150,12 @@ class ApiService {
   }
 
   async saveTokens(tokens: LoginResponse): Promise<void> {
-    await AsyncStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, tokens.accessToken);
-    await AsyncStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, tokens.refreshToken);
+    await storage.setItem(STORAGE_KEYS.ACCESS_TOKEN, tokens.accessToken);
+    await storage.setItem(STORAGE_KEYS.REFRESH_TOKEN, tokens.refreshToken);
   }
 
   async getAccessToken(): Promise<string | null> {
-    return AsyncStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    return storage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
   }
 
   async getUserProfile(): Promise<User> {

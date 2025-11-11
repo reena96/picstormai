@@ -5,15 +5,13 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/atoms/Button';
 
 export const HomeScreen: React.FC = () => {
   const { theme } = useTheme();
-  const { logout } = useAuth();
-  const navigation = useNavigation();
+  const { logout, user } = useAuth();
 
   const styles = StyleSheet.create<{
     container: ViewStyle;
@@ -56,20 +54,15 @@ export const HomeScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Welcome to RapidPhotoUpload!</Text>
+        <Text style={styles.title}>Welcome to PicStormAI!</Text>
         <Text style={styles.subtitle}>
-          You're logged in. This is the home screen placeholder.
+          Successfully logged in as {user?.displayName || 'User'}
+        </Text>
+        <Text style={styles.subtitle}>
+          Epic 1 (Authentication & Onboarding) Complete! 🎉
         </Text>
 
         <View style={styles.buttonContainer}>
-          <Button
-            variant="primary"
-            onPress={() => navigation.navigate('Settings' as never)}
-            testID="settings-button"
-          >
-            Settings
-          </Button>
-
           <Button
             variant="secondary"
             onPress={logout}

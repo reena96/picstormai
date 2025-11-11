@@ -24,8 +24,8 @@ export const LoginScreen: React.FC = () => {
   const { theme } = useTheme();
   const { login, isLoading, error: authError } = useAuth();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('demo@test.com');
+  const [password, setPassword] = useState('Demo1234');
   const [emailError, setEmailError] = useState('');
   const [formError, setFormError] = useState('');
 

@@ -6,7 +6,7 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { AuthContextType, AuthState, User } from '../types/auth';
 import { apiService, STORAGE_KEYS } from '../services/api';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { storage } from '../utils/storage';
 
 const initialAuthState: AuthState = {
   user: null,
@@ -31,7 +31,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
-      const accessToken = await AsyncStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+      const accessToken = await storage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
 
       if (accessToken) {
         // Token exists, fetch user profile

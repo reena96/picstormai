@@ -5,30 +5,42 @@
  */
 
 import React from 'react';
-import { Platform } from 'react-native';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
-import { RootNavigator } from './navigation/RootNavigator';
-import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
+import { useAuth } from './hooks/useAuth';
+import LoginScreen from './screens/LoginScreen';
+import HomeScreen from './screens/HomeScreen';
+import { View, ActivityIndicator } from 'react-native';
+import { useTheme } from './hooks/useTheme';
+
+const AppContent: React.FC = () => {
+  const { isAuthenticated, isLoading } = useAuth();
+  const { theme } = useTheme();
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
+        <ActivityIndicator size="large" color={theme.colors.primary[500]} />
+      </View>
+    );
+  }
+
+  // Simple conditional rendering without navigation for now
+  if (!isAuthenticated) {
+    return <LoginScreen />;
+  }
+
+  return <HomeScreen />;
+};
 
 const App: React.FC = () => {
   return (
-    <SafeAreaProvider initialMetrics={Platform.OS === 'web' ? initialWindowMetrics : undefined}>
-      <ThemeProvider>
-        <AuthProvider>
-          <RootNavigator />
-        </AuthProvider>
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
-
-// Legacy demo component (commented out for reference)
-/*
-const DemoApp: React.FC = () => {
-  // Legacy demo code - preserved for reference
-  // Uncomment and use DemoApp instead of App to view the design system showcase
-};
-*/
 
 export default App;

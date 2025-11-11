@@ -111,16 +111,24 @@ export const Button: React.FC<ButtonProps> = ({
   const isTextChild = (child: React.ReactNode): child is string | number =>
     typeof child === 'string' || typeof child === 'number';
 
-  const normalizedChildren = childArray.map((child, index) => {
-    if (isTextChild(child)) {
-      return (
-        <Text key={`button-text-${index}`} style={getTextStyle()}>
-          {child}
-        </Text>
-      );
-    }
-    return child;
-  });
+  const normalizedChildren = childArray
+    .filter((child) => {
+      // Filter out whitespace-only text nodes
+      if (typeof child === 'string') {
+        return child.trim().length > 0;
+      }
+      return true;
+    })
+    .map((child, index) => {
+      if (isTextChild(child)) {
+        return (
+          <Text key={`button-text-${index}`} style={getTextStyle()}>
+            {child}
+          </Text>
+        );
+      }
+      return child;
+    });
 
   const derivedAccessibilityLabel =
     accessibilityLabel ||

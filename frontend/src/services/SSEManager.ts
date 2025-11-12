@@ -69,6 +69,11 @@ export class SSEManager {
           } else if (response.status >= 400 && response.status < 500 && response.status !== 429) {
             // Client error (except rate limit) - don't retry
             throw new FatalError(`SSE connection failed: ${response.status} ${response.statusText}`);
+          } else if (response.ok && response.headers.get('content-type') !== 'text/event-stream') {
+            // 200 OK but wrong content-type - likely session completed or doesn't exist
+            // Don't retry as this indicates the session is no longer active
+            console.warn('[SSE] Received 200 OK but wrong content-type. Session may be completed.');
+            throw new FatalError(`SSE connection failed: ${response.status} ${response.statusText} (wrong content-type)`);
           } else {
             // Server error or rate limit - let library retry
             throw new Error(`SSE connection failed: ${response.status} ${response.statusText}`);

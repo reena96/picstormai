@@ -34,9 +34,6 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   const { theme } = useTheme();
 
-  console.log('Button: Rendering, variant:', variant, 'children type:', typeof children, 'children:',
-    typeof children === 'string' ? children : Array.isArray(children) ? children.length : 'complex');
-
   const getButtonStyle = (pressed: boolean): ViewStyle => {
     const baseStyle: ViewStyle = {
       borderRadius: theme.borderRadius.base,

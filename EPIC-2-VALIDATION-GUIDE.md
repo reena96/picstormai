@@ -9,8 +9,8 @@
 
 ## Overview
 
-This document provides step-by-step manual validation instructions for Epic 2 Phase B (Stories 2.6-2.9). All automated tests are passing (82/82), but manual validation is recommended to verify the complete user experience.
-
+This document provides step-by-step manual validation instructions for Epic 2 Phase B (Stories 2.6-2.9). All automated tests are passing (82/82), but manual validation is recommended to verify the complete user experience. 
+For testing photo uploads, use photos from '/Users/reena/Desktop/Project Briefs/100-test-images'
 ---
 
 ## Prerequisites
@@ -74,47 +74,99 @@ This document provides step-by-step manual validation instructions for Epic 2 Ph
 
 ### Test 2: SSE Endpoint Returns 200 With Valid JWT
 
+**Note**: The backend SSE endpoint requires JWT authentication via `Authorization` header. The standard `EventSource` API does not support custom headers, so we use `fetchEventSource` from `@microsoft/fetch-event-source` (which the frontend uses) or test via the actual upload flow.
+
 **Steps**:
-1. Login to app → Copy JWT token from localStorage
+1. Login to app → Get JWT token from localStorage
    ```javascript
-   localStorage.getItem('authToken')
+   localStorage.getItem('@auth:accessToken')
    ```
-2. In console, test SSE connection:
+2. In console, test SSE connection using fetchEventSource (requires importing the library):
    ```javascript
-   const token = localStorage.getItem('authToken');
-   const eventSource = new EventSource(
-     `http://localhost:8080/api/upload/sessions/test-session/stream?token=${token}`
-   );
-   eventSource.onopen = () => console.log('SSE Connected!');
-   eventSource.onerror = (e) => console.error('SSE Error:', e);
+   // Note: This requires @microsoft/fetch-event-source library
+   // The frontend uses this approach in SSEManager.ts
+   import { fetchEventSource } from '@microsoft/fetch-event-source';
+   
+   const token = localStorage.getItem('@auth:accessToken');
+   await fetchEventSource('http://localhost:8080/api/upload/sessions/test-session/stream', {
+     headers: {
+       'Authorization': `Bearer ${token}`
+     },
+     onopen: (response) => {
+       if (response.ok) {
+         console.log('SSE Connected!');
+       }
+     },
+     onerror: (err) => {
+       console.error('SSE Error:', err);
+     }
+   });
    ```
-3. **Expected**: Console shows "SSE Connected!"
-4. Close connection: `eventSource.close()`
+   
+   **Alternative**: Test via actual upload flow (Tests 4-5) which uses the proper SSE connection.
+
+3. **Expected**: Console shows "SSE Connected!" or connection established in Network tab
+4. **Note**: A real session ID from an active upload is required for full functionality
 
 **Result**: ☐ Pass ☐ Fail
+
+**Implementation Note**: The backend `JwtAuthenticationFilter` only reads tokens from the `Authorization: Bearer <token>` header, not query parameters. The frontend `SSEManager` correctly uses `fetchEventSource` with custom headers.
 
 ---
 
 ### Test 3: SSE Health Info Endpoint
 
 **Steps**:
-1. Navigate to: `http://localhost:8080/api/upload/sessions/sse-info`
-2. **Expected**: JSON response with:
+1. Login to app and get JWT token
+2. In browser console or via curl, test the endpoint:
+   ```javascript
+   const token = localStorage.getItem('@auth:accessToken');
+   fetch('http://localhost:8080/api/realtime/info', {
+     headers: {
+       'Authorization': `Bearer ${token}`
+     }
+   })
+   .then(r => r.json())
+   .then(data => console.log(data));
+   ```
+   
+   Or navigate to: `http://localhost:8080/api/realtime/info` (requires authentication)
+   
+3. **Expected**: JSON response with:
    ```json
    {
-     "sseSupported": true,
-     "endpoint": "/api/upload/sessions/{sessionId}/stream",
-     "messageTypes": ["PHOTO_UPLOADED", "PHOTO_FAILED", "SESSION_COMPLETED"]
+     "sessionStreamEndpoint": "/api/upload/sessions/{sessionId}/stream",
+     "protocol": "Server-Sent Events (SSE)",
+     "messageTypes": [
+       "PHOTO_UPLOADED - Photo successfully uploaded to S3",
+       "PHOTO_FAILED - Photo upload failed with error",
+       "SESSION_COMPLETED - All photos in session finished uploading"
+     ],
+     "notificationStreamEndpoint": "/api/upload/sessions/notifications/stream",
+     "connectionInfo": [
+       "Authentication required: Include JWT token in Authorization header",
+       "EventSource API automatically handles reconnection",
+       "Heartbeat sent every 30 seconds to keep connection alive",
+       "Connection timeout: 60 seconds of inactivity"
+     ]
    }
    ```
 
 **Result**: ☐ Pass ☐ Fail
+
+**Note**: The endpoint is `/api/realtime/info` (not `/api/upload/sessions/sse-info`) and requires JWT authentication via Authorization header.
 
 ---
 
 ## Story 2.7: Real-Time Progress Broadcasting
 
 **Goal**: Verify upload progress events are published via SSE
+
+**⚠️ Manual Testing Required**: Tests 4-12 require selecting actual photo files from your local filesystem. These tests cannot be fully automated via browser automation tools as they require file system access. Please manually:
+1. Navigate to the Upload screen (`/upload`)
+2. Click "Select Photos" button
+3. Select photos from `/Users/reena/Desktop/Project Briefs/100-test-images`
+4. Observe the upload progress and SSE events in DevTools Network tab
 
 ### Test 4: Upload Photo and Receive SSE Event
 

@@ -182,9 +182,20 @@ export const UploadScreen: React.FC = () => {
   // Handle SSE message: Session completed
   const handleSessionCompleted = useCallback((message: SessionCompletedMessage) => {
     console.log('[UploadScreen] Session completed:', message);
+
+    // Clear fallback timer if it exists
+    const fallbackTimer = (window as any).__uploadCompletionTimer;
+    if (fallbackTimer) {
+      clearTimeout(fallbackTimer);
+      (window as any).__uploadCompletionTimer = null;
+    }
+
     setCompletionStats(message);
     setCompletionModalVisible(true);
     setIsUploading(false);
+    // Clear session ID to stop SSE reconnection attempts
+    // The backend closes the SSE stream when session completes
+    setCurrentSessionId(null);
   }, []);
 
   const handleSelectPhotos = useCallback(async () => {
@@ -349,12 +360,20 @@ export const UploadScreen: React.FC = () => {
         API_BASE_URL,
         token,
         (progress) => {
-          console.log('UploadScreen: Progress update:', progress);
+          // Progress updates are handled via SSE messages - no need to log here
           setUploadProgress(prev => new Map(prev).set(progress.photoId, progress));
         },
         (sessionId) => {
           console.log('UploadScreen: Upload complete via local callback! SessionId:', sessionId);
-          // Don't set isUploading to false here - let SSE SESSION_COMPLETED handle it
+          // Fallback: If SSE doesn't send SESSION_COMPLETED within 2 seconds, handle completion locally
+          const fallbackTimer = setTimeout(() => {
+            console.warn('[UploadScreen] SSE SESSION_COMPLETED not received, using local fallback');
+            setIsUploading(false);
+            // Don't show completion modal here - SSE should handle it, or user can navigate away
+          }, 2000);
+
+          // Store timer so we can clear it if SSE message arrives
+          (window as any).__uploadCompletionTimer = fallbackTimer;
         },
         (photoId, error) => {
           console.error('UploadScreen: Photo upload failed:', photoId, error);
@@ -619,7 +638,7 @@ export const UploadScreen: React.FC = () => {
           onDrop={handleDrop}
           onDragOver={handleDragOver}
         >
-          <Upload size={48} color={theme.colors.primary} />
+          <Upload size={48} color={theme.colors.primary[500]} />
           <Text style={styles.dropzoneText}>Drop photos here</Text>
           <Text style={styles.dropzoneHint}>or</Text>
           <Button

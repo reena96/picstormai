@@ -19,11 +19,15 @@ import GalleryScreen from '../screens/GalleryScreen';
 const Stack = createNativeStackNavigator();
 
 export const RootNavigator: React.FC = () => {
+  console.log('RootNavigator: Rendering');
   const { isAuthenticated, isLoading, user, markOnboardingComplete } = useAuth();
   const { theme } = useTheme();
 
+  console.log('RootNavigator: isAuthenticated:', isAuthenticated, 'isLoading:', isLoading, 'user:', user?.email);
+
   // Show loading screen while checking auth status
   if (isLoading) {
+    console.log('RootNavigator: Showing loading screen');
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={theme.colors.primary[500]} />
@@ -33,19 +37,26 @@ export const RootNavigator: React.FC = () => {
 
   // Determine if we should show onboarding
   const shouldShowOnboarding = isAuthenticated && user && !user.hasSeenOnboarding;
+  console.log('RootNavigator: shouldShowOnboarding:', shouldShowOnboarding);
 
   const handleOnboardingComplete = async () => {
+    console.log('RootNavigator: handleOnboardingComplete called');
     await markOnboardingComplete();
     // Navigation will automatically update when user state changes
   };
 
   const handleOnboardingSkip = async () => {
+    console.log('RootNavigator: handleOnboardingSkip called');
     await markOnboardingComplete();
     // Navigation will automatically update when user state changes
   };
 
+  console.log('RootNavigator: Rendering NavigationContainer');
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      onReady={() => console.log('NavigationContainer: Ready')}
+      onStateChange={(state) => console.log('NavigationContainer: State changed', state?.routes?.[0]?.name)}
+    >
       <Stack.Navigator
         screenOptions={{
           headerShown: false,

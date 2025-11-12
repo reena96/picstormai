@@ -10,12 +10,13 @@ import com.rapidphoto.cqrs.queries.GetUserByIdQuery;
 import com.rapidphoto.cqrs.queries.GetUserPreferencesQuery;
 import com.rapidphoto.cqrs.queries.handlers.GetUserByIdQueryHandler;
 import com.rapidphoto.cqrs.queries.handlers.GetUserPreferencesQueryHandler;
+import com.rapidphoto.security.UserPrincipal;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -51,9 +52,8 @@ public class UserController {
      * Retrieves current user preferences.
      */
     @GetMapping("/preferences")
-    public Mono<ResponseEntity<UserPreferencesDTO>> getPreferences(Authentication authentication) {
-        UUID userId = UUID.fromString(authentication.getName());
-        GetUserPreferencesQuery query = new GetUserPreferencesQuery(userId);
+    public Mono<ResponseEntity<UserPreferencesDTO>> getPreferences(@AuthenticationPrincipal UserPrincipal currentUser) {
+        GetUserPreferencesQuery query = new GetUserPreferencesQuery(currentUser.userId());
 
         return getPreferencesHandler.handle(query)
             .map(ResponseEntity::ok)
@@ -69,12 +69,10 @@ public class UserController {
     @PutMapping("/preferences")
     public Mono<ResponseEntity<UserPreferencesDTO>> updatePreferences(
         @Valid @RequestBody UpdatePreferencesRequest request,
-        Authentication authentication
+        @AuthenticationPrincipal UserPrincipal currentUser
     ) {
-        UUID userId = UUID.fromString(authentication.getName());
-
         UpdateUserPreferencesCommand command = new UpdateUserPreferencesCommand(
-            userId,
+            currentUser.userId(),
             request.animationsEnabled(),
             request.soundEnabled(),
             request.theme(),
@@ -95,9 +93,8 @@ public class UserController {
      * Retrieves current user profile.
      */
     @GetMapping("/profile")
-    public Mono<ResponseEntity<UserDTO>> getProfile(Authentication authentication) {
-        UUID userId = UUID.fromString(authentication.getName());
-        GetUserByIdQuery query = new GetUserByIdQuery(userId);
+    public Mono<ResponseEntity<UserDTO>> getProfile(@AuthenticationPrincipal UserPrincipal currentUser) {
+        GetUserByIdQuery query = new GetUserByIdQuery(currentUser.userId());
 
         return getUserByIdHandler.handle(query)
             .map(ResponseEntity::ok)
@@ -111,9 +108,8 @@ public class UserController {
      * Marks onboarding tutorial as complete for current user.
      */
     @PatchMapping("/onboarding")
-    public Mono<ResponseEntity<UserDTO>> markOnboardingComplete(Authentication authentication) {
-        UUID userId = UUID.fromString(authentication.getName());
-        UpdateUserFlagCommand command = new UpdateUserFlagCommand(userId);
+    public Mono<ResponseEntity<UserDTO>> markOnboardingComplete(@AuthenticationPrincipal UserPrincipal currentUser) {
+        UpdateUserFlagCommand command = new UpdateUserFlagCommand(currentUser.userId());
 
         return updateUserFlagHandler.handle(command)
             .map(UserDTO::fromDomain)

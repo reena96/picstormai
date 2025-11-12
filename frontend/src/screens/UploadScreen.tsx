@@ -1,9 +1,10 @@
 /**
  * Upload Screen - Photo Selection & Upload Management
  * Story 2.1: Photo Selection & Validation UI
+ * Story 2.8: SSE Client Integration
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,9 +17,13 @@ import {
   TextStyle,
   ImageStyle,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../hooks/useTheme';
+import { useAuth } from '../hooks/useAuth';
+import { useSSE } from '../hooks/useSSE';
 import { Button } from '../components/atoms/Button';
-import { Upload, X, AlertCircle } from 'lucide-react-native';
+import { UploadCompletionModal } from '../components/molecules/UploadCompletionModal';
+import { Upload, X, AlertCircle, Wifi, WifiOff } from 'lucide-react-native';
 import {
   SelectedPhoto,
   validatePhoto,
@@ -27,11 +32,160 @@ import {
   MAX_FILE_SIZE_MB,
   SUPPORTED_IMAGE_TYPES,
 } from '../types/upload';
+import { uploadService, UploadProgress } from '../services/uploadService';
+import { apiService } from '../services/api';
+import {
+  UploadProgressMessage,
+  PhotoUploadedMessage,
+  PhotoFailedMessage,
+  SessionCompletedMessage,
+} from '../types/sse';
 
 export const UploadScreen: React.FC = () => {
+  const navigation = useNavigation();
   const { theme } = useTheme();
+  const { user } = useAuth();
   const [selectedPhotos, setSelectedPhotos] = useState<SelectedPhoto[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<Map<string, UploadProgress>>(new Map());
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  const [completionModalVisible, setCompletionModalVisible] = useState(false);
+  const [completionStats, setCompletionStats] = useState<SessionCompletedMessage | null>(null);
+
+  // Get API base URL
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+
+  // Build SSE URL for current session
+  const sseUrl = currentSessionId
+    ? `${API_BASE_URL}/api/upload/sessions/${currentSessionId}/stream`
+    : '';
+
+  // SSE connection for real-time progress updates
+  const { isConnected, connectionStatus, subscribe, unsubscribe } = useSSE({
+    url: sseUrl,
+    authToken,
+    enabled: !!currentSessionId && !!authToken,
+    onStateResync: useCallback(async () => {
+      // AC5: Sync state on reconnect
+      if (!currentSessionId || !authToken) return;
+
+      try {
+        console.log('[UploadScreen] Syncing state after reconnect');
+        const response = await fetch(
+          `${API_BASE_URL}/api/upload/sessions/${currentSessionId}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${authToken}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch session state');
+        }
+
+        const session = await response.json();
+
+        // Sync local progress state
+        const updatedProgress = new Map<string, UploadProgress>();
+        session.photos?.forEach((photo: any) => {
+          const status = photo.uploadStatus?.toLowerCase() || 'queued';
+          updatedProgress.set(photo.id, {
+            photoId: photo.id,
+            status: status as UploadProgress['status'],
+            progress: status === 'completed' ? 100 : 0,
+            bytesUploaded: 0,
+            totalBytes: 0,
+          });
+        });
+
+        setUploadProgress(updatedProgress);
+        console.log('[UploadScreen] State synced successfully');
+      } catch (error) {
+        console.error('[UploadScreen] Failed to sync state:', error);
+      }
+    }, [currentSessionId, authToken, API_BASE_URL]),
+  });
+
+  // Load auth token on mount
+  useEffect(() => {
+    const loadToken = async () => {
+      const token = await apiService.getAccessToken();
+      setAuthToken(token);
+    };
+    loadToken();
+  }, []);
+
+  // Subscribe to SSE messages when session starts
+  useEffect(() => {
+    if (!currentSessionId || !authToken) return;
+
+    const handleSSEMessage = (message: UploadProgressMessage) => {
+      console.log('[UploadScreen] SSE message received:', message);
+
+      switch (message.type) {
+        case 'PHOTO_UPLOADED':
+          handlePhotoUploaded(message as PhotoUploadedMessage);
+          break;
+        case 'PHOTO_FAILED':
+          handlePhotoFailed(message as PhotoFailedMessage);
+          break;
+        case 'SESSION_COMPLETED':
+          handleSessionCompleted(message as SessionCompletedMessage);
+          break;
+      }
+    };
+
+    subscribe(handleSSEMessage);
+
+    return () => {
+      unsubscribe();
+    };
+  }, [currentSessionId, authToken, subscribe, unsubscribe]);
+
+  // Handle SSE message: Photo uploaded successfully
+  const handlePhotoUploaded = useCallback((message: PhotoUploadedMessage) => {
+    console.log('[UploadScreen] Photo uploaded:', message.photoId);
+    setUploadProgress((prev) => {
+      const updated = new Map(prev);
+      updated.set(message.photoId, {
+        photoId: message.photoId,
+        status: 'completed',
+        progress: 100,
+        bytesUploaded: 0,
+        totalBytes: 0,
+      });
+      return updated;
+    });
+  }, []);
+
+  // Handle SSE message: Photo upload failed
+  const handlePhotoFailed = useCallback((message: PhotoFailedMessage) => {
+    console.log('[UploadScreen] Photo failed:', message.photoId, message.reason);
+    setUploadProgress((prev) => {
+      const updated = new Map(prev);
+      updated.set(message.photoId, {
+        photoId: message.photoId,
+        status: 'failed',
+        progress: 0,
+        bytesUploaded: 0,
+        totalBytes: 0,
+        error: message.reason,
+      });
+      return updated;
+    });
+    setErrors(prev => [...prev, `Photo ${message.photoId}: ${message.reason}`]);
+  }, []);
+
+  // Handle SSE message: Session completed
+  const handleSessionCompleted = useCallback((message: SessionCompletedMessage) => {
+    console.log('[UploadScreen] Session completed:', message);
+    setCompletionStats(message);
+    setCompletionModalVisible(true);
+    setIsUploading(false);
+  }, []);
 
   const handleSelectPhotos = useCallback(async () => {
     try {
@@ -145,6 +299,79 @@ export const UploadScreen: React.FC = () => {
     e.stopPropagation();
   }, []);
 
+  // Handle modal actions
+  const handleViewPhotos = useCallback(() => {
+    setCompletionModalVisible(false);
+    // @ts-ignore - Navigation type inference
+    navigation.navigate('Gallery');
+  }, [navigation]);
+
+  const handleRetryFailed = useCallback(() => {
+    setCompletionModalVisible(false);
+    // TODO: Implement retry logic in Story 2.12
+    console.log('[UploadScreen] Retry failed uploads - to be implemented in Story 2.12');
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setCompletionModalVisible(false);
+  }, []);
+
+  const handleStartUpload = useCallback(async () => {
+    if (selectedPhotos.length === 0 || !user) {
+      console.log('UploadScreen: Cannot upload - selectedPhotos:', selectedPhotos.length, 'user:', !!user);
+      return;
+    }
+
+    console.log('UploadScreen: Starting upload for', selectedPhotos.length, 'photos');
+    console.log('UploadScreen: User object:', user);
+    setIsUploading(true);
+    setErrors([]);
+
+    try {
+      // Try to get token directly from storage to debug
+      const { storage } = await import('../utils/storage');
+      const { STORAGE_KEYS } = await import('../services/api');
+      const directToken = await storage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+      console.log('UploadScreen: Direct token from storage:', directToken ? directToken.substring(0, 20) + '...' : 'null');
+
+      const token = await apiService.getAccessToken();
+
+      console.log('UploadScreen: Auth token via apiService:', token ? token.substring(0, 20) + '...' : 'null');
+      if (!token) {
+        console.error('UploadScreen: No auth token found!');
+        throw new Error('Not authenticated. Please log in first.');
+      }
+      console.log('UploadScreen: API_BASE_URL:', API_BASE_URL);
+
+      console.log('UploadScreen: Calling uploadService.startUploadSession');
+      const sessionId = await uploadService.startUploadSession(
+        selectedPhotos,
+        API_BASE_URL,
+        token,
+        (progress) => {
+          console.log('UploadScreen: Progress update:', progress);
+          setUploadProgress(prev => new Map(prev).set(progress.photoId, progress));
+        },
+        (sessionId) => {
+          console.log('UploadScreen: Upload complete via local callback! SessionId:', sessionId);
+          // Don't set isUploading to false here - let SSE SESSION_COMPLETED handle it
+        },
+        (photoId, error) => {
+          console.error('UploadScreen: Photo upload failed:', photoId, error);
+          // Don't add to errors here - let SSE PHOTO_FAILED handle it
+        }
+      );
+
+      console.log('UploadScreen: Upload session started:', sessionId);
+      // Set session ID to enable SSE connection
+      setCurrentSessionId(sessionId);
+    } catch (error: any) {
+      console.error('UploadScreen: Upload failed:', error);
+      setErrors([error.message || 'Upload failed']);
+      setIsUploading(false);
+    }
+  }, [selectedPhotos, user, API_BASE_URL]);
+
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -158,6 +385,14 @@ export const UploadScreen: React.FC = () => {
     header: ViewStyle;
     title: TextStyle;
     subtitle: TextStyle;
+    connectionBanner: ViewStyle;
+    connectionBannerConnected: ViewStyle;
+    connectionBannerConnecting: ViewStyle;
+    connectionBannerDisconnected: ViewStyle;
+    connectionBannerText: TextStyle;
+    connectionBannerTextConnected: TextStyle;
+    connectionBannerTextConnecting: TextStyle;
+    connectionBannerTextDisconnected: TextStyle;
     dropzone: ViewStyle;
     dropzoneText: TextStyle;
     dropzoneHint: TextStyle;
@@ -196,6 +431,44 @@ export const UploadScreen: React.FC = () => {
       fontSize: theme.typography.fontSize.sm,
       color: theme.colors.text.secondary,
       fontFamily: theme.typography.fontFamily.primary,
+    },
+    connectionBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: theme.spacing[3],
+      marginHorizontal: theme.spacing[4],
+      marginTop: theme.spacing[3],
+      borderRadius: 8,
+      gap: theme.spacing[2],
+    },
+    connectionBannerConnected: {
+      backgroundColor: '#D1FAE5',
+      borderWidth: 1,
+      borderColor: '#10B981',
+    },
+    connectionBannerConnecting: {
+      backgroundColor: '#FEF3C7',
+      borderWidth: 1,
+      borderColor: '#F59E0B',
+    },
+    connectionBannerDisconnected: {
+      backgroundColor: '#FEE2E2',
+      borderWidth: 1,
+      borderColor: '#EF4444',
+    },
+    connectionBannerText: {
+      fontSize: theme.typography.fontSize.sm,
+      fontFamily: theme.typography.fontFamily.primary,
+      fontWeight: theme.typography.fontWeight.medium as TextStyle['fontWeight'],
+    },
+    connectionBannerTextConnected: {
+      color: '#065F46',
+    },
+    connectionBannerTextConnecting: {
+      color: '#92400E',
+    },
+    connectionBannerTextDisconnected: {
+      color: '#991B1B',
     },
     dropzone: {
       margin: theme.spacing[4],
@@ -246,7 +519,6 @@ export const UploadScreen: React.FC = () => {
       padding: theme.spacing[4],
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: theme.spacing[3],
     },
     photoCard: {
       width: Platform.OS === 'web' ? 150 : '45%',
@@ -255,6 +527,7 @@ export const UploadScreen: React.FC = () => {
       overflow: 'hidden',
       borderWidth: 1,
       borderColor: theme.colors.border,
+      margin: theme.spacing[1.5],
     },
     photoImage: {
       width: '100%',
@@ -314,6 +587,30 @@ export const UploadScreen: React.FC = () => {
           Select up to {MAX_PHOTOS_PER_UPLOAD} photos (max {MAX_FILE_SIZE_MB}MB each)
         </Text>
       </View>
+
+      {/* SSE Connection Status Banner */}
+      {isUploading && currentSessionId && (
+        <View style={[
+          styles.connectionBanner,
+          connectionStatus === 'connected' ? styles.connectionBannerConnected :
+          connectionStatus === 'connecting' ? styles.connectionBannerConnecting :
+          styles.connectionBannerDisconnected
+        ]}>
+          {connectionStatus === 'connected' && <Wifi size={16} color="#10B981" />}
+          {connectionStatus === 'connecting' && <Wifi size={16} color="#F59E0B" />}
+          {connectionStatus === 'disconnected' && <WifiOff size={16} color="#EF4444" />}
+          <Text style={[
+            styles.connectionBannerText,
+            connectionStatus === 'connected' ? styles.connectionBannerTextConnected :
+            connectionStatus === 'connecting' ? styles.connectionBannerTextConnecting :
+            styles.connectionBannerTextDisconnected
+          ]}>
+            {connectionStatus === 'connected' && 'Connected - Real-time updates active'}
+            {connectionStatus === 'connecting' && 'Connecting to real-time updates...'}
+            {connectionStatus === 'disconnected' && 'Reconnecting...'}
+          </Text>
+        </View>
+      )}
 
       {selectedPhotos.length === 0 && (
         <View
@@ -382,10 +679,11 @@ export const UploadScreen: React.FC = () => {
             <View style={styles.buttonContainer}>
               <Button
                 variant="primary"
-                onPress={() => {/* Upload will be implemented in Story 2.4 */}}
-                disabled={selectedPhotos.length === 0}
+                onPress={handleStartUpload}
+                disabled={selectedPhotos.length === 0 || isUploading}
+                loading={isUploading}
               >
-                Start Upload
+                {isUploading ? 'Uploading...' : 'Start Upload'}
               </Button>
               <Button
                 variant="secondary"
@@ -397,6 +695,20 @@ export const UploadScreen: React.FC = () => {
             </View>
           </View>
         </>
+      )}
+
+      {/* Upload Completion Modal */}
+      {completionStats && (
+        <UploadCompletionModal
+          visible={completionModalVisible}
+          totalPhotos={completionStats.totalCount}
+          successfulPhotos={completionStats.uploadedCount}
+          failedPhotos={completionStats.failedCount}
+          onViewPhotos={handleViewPhotos}
+          onRetryFailed={completionStats.failedCount > 0 ? handleRetryFailed : undefined}
+          onClose={handleCloseModal}
+          soundEnabled={true}
+        />
       )}
     </View>
   );

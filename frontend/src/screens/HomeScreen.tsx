@@ -11,9 +11,11 @@ import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/atoms/Button';
 
 export const HomeScreen: React.FC = () => {
+  console.log('HomeScreen: Rendering');
   const navigation = useNavigation();
   const { theme } = useTheme();
   const { logout, user } = useAuth();
+  console.log('HomeScreen: User:', user?.email);
 
   const styles = StyleSheet.create<{
     container: ViewStyle;
@@ -21,6 +23,7 @@ export const HomeScreen: React.FC = () => {
     title: TextStyle;
     subtitle: TextStyle;
     buttonContainer: ViewStyle;
+    button: ViewStyle;
   }>({
     container: {
       flex: 1,
@@ -49,7 +52,9 @@ export const HomeScreen: React.FC = () => {
     buttonContainer: {
       width: '100%',
       maxWidth: 300,
-      gap: theme.spacing[3],
+    },
+    button: {
+      marginBottom: theme.spacing[3],
     },
   });
 
@@ -69,6 +74,7 @@ export const HomeScreen: React.FC = () => {
             variant="primary"
             onPress={() => navigation.navigate('Upload' as never)}
             testID="upload-button"
+            style={styles.button}
           >
             Upload Photos
           </Button>

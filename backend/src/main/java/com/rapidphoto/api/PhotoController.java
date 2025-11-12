@@ -36,10 +36,12 @@ public class PhotoController {
     ) {
         var query = new GetPhotosForUserQuery(
             currentUser.userId(),
-            PageRequest.of(page, size)
+            page,
+            size
         );
 
         return getPhotosHandler.handle(query)
+            .collectList()
             .map(ResponseEntity::ok);
     }
 

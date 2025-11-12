@@ -213,7 +213,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 40,
-    gap: 12,
   },
   skipButton: {
     flex: 1,
@@ -224,6 +223,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 6,
   },
   skipButtonText: {
     color: '#007AFF',
@@ -237,6 +237,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#007AFF',
     justifyContent: 'center',
     alignItems: 'center',
+    marginLeft: 6,
   },
   nextButtonText: {
     color: '#FFFFFF',

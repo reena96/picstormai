@@ -31,12 +31,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
+      console.log('AuthContext: Starting checkAuthStatus');
       const accessToken = await storage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+      console.log('AuthContext: Access token exists:', !!accessToken);
 
       if (accessToken) {
         // Token exists, fetch user profile to validate it
         try {
+          console.log('AuthContext: Fetching user profile');
           const user = await apiService.getUserProfile();
+          console.log('AuthContext: User profile fetched successfully');
           setAuthState({
             user,
             isAuthenticated: true,
@@ -45,7 +49,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           });
         } catch (error) {
           // If profile fetch fails (invalid/expired token), clear tokens and log out
-          console.log('Token validation failed, clearing stored tokens');
+          console.log('AuthContext: Token validation failed, clearing stored tokens', error);
           await storage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
           await storage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
           setAuthState({
@@ -56,12 +60,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           });
         }
       } else {
+        console.log('AuthContext: No access token, setting unauthenticated state');
         setAuthState({
           ...initialAuthState,
           isLoading: false,
         });
       }
     } catch (error) {
+      console.error('AuthContext: Caught error in checkAuthStatus:', error);
       setAuthState({
         ...initialAuthState,
         isLoading: false,

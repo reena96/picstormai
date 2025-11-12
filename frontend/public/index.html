@@ -12,6 +12,13 @@
       padding: 0;
     }
 
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      background-color: #FFFFFF;
+    }
+
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
         'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
@@ -20,8 +27,17 @@
     }
 
     #root {
-      height: 100vh;
-      width: 100vw;
+      height: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* React Native Web reset */
+    #root > div {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
     }
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">

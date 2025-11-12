@@ -1,5 +1,17 @@
 // Jest setup file for React Native Web testing
 
+// Mock lucide-react-native icons
+jest.mock('lucide-react-native', () => {
+  const React = require('react');
+  return new Proxy({}, {
+    get: (target, prop) => {
+      return React.forwardRef((props, ref) =>
+        React.createElement('svg', { ...props, ref, 'data-testid': prop })
+      );
+    }
+  });
+});
+
 // Mock React Native's Animated API
 global.requestAnimationFrame = (cb) => {
   setTimeout(cb, 0);

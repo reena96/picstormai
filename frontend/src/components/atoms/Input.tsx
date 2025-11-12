@@ -93,13 +93,15 @@ export const Input: React.FC<InputProps> = ({
     return type === 'password' && !showPassword;
   };
 
+  console.log('Input: Rendering, type:', type, 'label:', label, 'error:', error, 'value:', value.substring(0, 20));
+
   return (
     <View style={[containerStyle, style]}>
-      {label && (
+      {label ? (
         <Text style={labelStyle} accessibilityRole="text">
           {label}
         </Text>
-      )}
+      ) : null}
       <View style={inputContainerStyle}>
         <TextInput
           value={value}
@@ -142,11 +144,11 @@ export const Input: React.FC<InputProps> = ({
           </Pressable>
         )}
       </View>
-      {error && (
+      {error ? (
         <Text style={errorStyle} accessibilityRole="alert">
           {error}
         </Text>
-      )}
+      ) : null}
     </View>
   );
 };

@@ -13,7 +13,7 @@ module.exports = {
     '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native-web|lucide-react-native)/)',
+    'node_modules/(?!(react-native-web|lucide-react-native|react-native-svg)/)',
   ],
   testMatch: [
     '**/__tests__/**/*.test.(ts|tsx)',

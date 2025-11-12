@@ -4,40 +4,25 @@
  * Story 1.3: Login/Logout UI implementation
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
-import { useAuth } from './hooks/useAuth';
-import LoginScreen from './screens/LoginScreen';
-import HomeScreen from './screens/HomeScreen';
-import { View, ActivityIndicator } from 'react-native';
-import { useTheme } from './hooks/useTheme';
-
-const AppContent: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuth();
-  const { theme } = useTheme();
-
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
-        <ActivityIndicator size="large" color={theme.colors.primary[500]} />
-      </View>
-    );
-  }
-
-  // Simple conditional rendering without navigation for now
-  if (!isAuthenticated) {
-    return <LoginScreen />;
-  }
-
-  return <HomeScreen />;
-};
+import { RootNavigator } from './navigation/RootNavigator';
 
 const App: React.FC = () => {
+  useEffect(() => {
+    console.log('=== App Component Mounted ===');
+    return () => {
+      console.log('=== App Component Unmounted ===');
+    };
+  }, []);
+
+  console.log('App: Rendering');
+
   return (
     <ThemeProvider>
       <AuthProvider>
-        <AppContent />
+        <RootNavigator />
       </AuthProvider>
     </ThemeProvider>
   );

@@ -8,6 +8,8 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3ClientBuilder;
+import software.amazon.awssdk.services.s3.S3Configuration;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 import java.net.URI;
 
@@ -49,6 +51,34 @@ public class S3Config {
         if (endpoint != null && !endpoint.isEmpty()) {
             builder.endpointOverride(URI.create(endpoint))
                    .forcePathStyle(true);  // Required for LocalStack
+        }
+
+        return builder.build();
+    }
+
+    @Bean
+    public S3Presigner s3Presigner() {
+        var builder = S3Presigner.builder()
+            .region(Region.of(region));
+
+        // Configure credentials if provided
+        if (accessKeyId != null && !accessKeyId.isEmpty() &&
+            secretAccessKey != null && !secretAccessKey.isEmpty()) {
+            builder.credentialsProvider(
+                StaticCredentialsProvider.create(
+                    AwsBasicCredentials.create(accessKeyId, secretAccessKey)
+                )
+            );
+        }
+
+        // Configure endpoint override for LocalStack
+        if (endpoint != null && !endpoint.isEmpty()) {
+            builder.endpointOverride(URI.create(endpoint))
+                   .serviceConfiguration(
+                       S3Configuration.builder()
+                           .pathStyleAccessEnabled(true)
+                           .build()
+                   );
         }
 
         return builder.build();

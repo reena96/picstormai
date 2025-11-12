@@ -57,32 +57,31 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const [mode, setMode] = useState<ThemeMode>('auto');
+  // FORCE LIGHT MODE FOR NOW
+  const [mode, setMode] = useState<ThemeMode>('light');
   const [isDark, setIsDark] = useState(false);
+
+  console.log('ThemeProvider: Rendering, mode:', mode, 'isDark:', isDark);
 
   // Initialize theme from storage or system preference
   useEffect(() => {
     const initializeTheme = async () => {
+      console.log('ThemeProvider: Initializing theme');
       try {
         // For web: use localStorage
         if (Platform.OS === 'web') {
-          const savedMode = localStorage.getItem('themeMode') as ThemeMode;
-          if (savedMode && ['light', 'dark', 'auto'].includes(savedMode)) {
-            setMode(savedMode);
-          }
-
-          // Detect system preference
-          if (savedMode === 'auto' || !savedMode) {
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            setIsDark(prefersDark);
-          } else {
-            setIsDark(savedMode === 'dark');
-          }
+          console.log('ThemeProvider: Platform is web');
+          // FORCE LIGHT MODE - ignore saved preferences for now
+          console.log('ThemeProvider: FORCING LIGHT MODE');
+          setMode('light');
+          setIsDark(false);
+          localStorage.setItem('themeMode', 'light');
 
           // Listen for system preference changes
           const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
           const handleChange = (e: MediaQueryListEvent) => {
-            if (mode === 'auto') {
+            const currentMode = localStorage.getItem('themeMode') as ThemeMode;
+            if (currentMode === 'auto' || !currentMode) {
               setIsDark(e.matches);
             }
           };
@@ -96,12 +95,13 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
           setIsDark(false);
         }
       } catch (error) {
-        console.error('Failed to load theme preference:', error);
+        console.error('ThemeProvider: Failed to load theme preference:', error);
       }
+      console.log('ThemeProvider: Theme initialization complete');
     };
 
     initializeTheme();
-  }, [mode]);
+  }, []); // FIXED: Empty dependency array - only run once on mount
 
   const toggleTheme = () => {
     const newMode = isDark ? 'light' : 'dark';

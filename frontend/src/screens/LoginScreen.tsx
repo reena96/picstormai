@@ -21,13 +21,14 @@ import { Input } from '../components/atoms/Input';
 import { Button } from '../components/atoms/Button';
 
 export const LoginScreen: React.FC = () => {
+  console.log('LoginScreen: Rendering');
   const { theme } = useTheme();
   const { login, isLoading, error: authError } = useAuth();
 
   const [email, setEmail] = useState('demo@test.com');
   const [password, setPassword] = useState('Demo1234');
-  const [emailError, setEmailError] = useState('');
-  const [formError, setFormError] = useState('');
+  const [emailError, setEmailError] = useState<string | undefined>(undefined);
+  const [formError, setFormError] = useState<string | undefined>(undefined);
 
   const validateEmail = (value: string): boolean => {
     const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$/;
@@ -39,28 +40,34 @@ export const LoginScreen: React.FC = () => {
       setEmailError('Please enter a valid email address');
       return false;
     }
-    setEmailError('');
+    setEmailError(undefined);
     return true;
   };
 
   const handleLogin = async () => {
+    console.log('LoginScreen: handleLogin called with email:', email);
     // Clear previous errors
-    setFormError('');
+    setFormError(undefined);
 
     // Validate form
     const isEmailValid = validateEmail(email);
     if (!password) {
+      console.log('LoginScreen: Password is empty');
       setFormError('Password is required');
       return;
     }
     if (!isEmailValid) {
+      console.log('LoginScreen: Email validation failed');
       return;
     }
 
     try {
+      console.log('LoginScreen: Calling login API');
       await login(email, password);
+      console.log('LoginScreen: Login successful');
       // Navigation will be handled by AuthContext state change
     } catch (error: any) {
+      console.error('LoginScreen: Login failed:', error);
       setFormError(error.message || 'Invalid email or password');
     }
   };
@@ -152,7 +159,7 @@ export const LoginScreen: React.FC = () => {
             onChangeText={(text) => {
               setEmail(text);
               if (emailError) validateEmail(text);
-              if (formError) setFormError('');
+              if (formError) setFormError(undefined);
             }}
             error={emailError}
             disabled={isLoading}
@@ -167,7 +174,7 @@ export const LoginScreen: React.FC = () => {
             value={password}
             onChangeText={(text) => {
               setPassword(text);
-              if (formError) setFormError('');
+              if (formError) setFormError(undefined);
             }}
             disabled={isLoading}
             testID="login-password-input"

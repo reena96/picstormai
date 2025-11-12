@@ -6,13 +6,13 @@ import com.rapidphoto.domain.photo.Photo;
 import com.rapidphoto.domain.photo.PhotoRepository;
 import com.rapidphoto.domain.upload.UploadSession;
 import com.rapidphoto.domain.upload.UploadSessionRepository;
+import com.rapidphoto.streaming.UploadProgressEventHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -34,13 +34,13 @@ class CompletePhotoUploadCommandHandlerTest {
     private UploadSessionRepository uploadSessionRepository;
 
     @Mock
-    private ApplicationEventPublisher eventPublisher;
+    private UploadProgressEventHandler eventHandler;
 
     private CompletePhotoUploadCommandHandler handler;
 
     @BeforeEach
     void setUp() {
-        handler = new CompletePhotoUploadCommandHandler(photoRepository, uploadSessionRepository, eventPublisher);
+        handler = new CompletePhotoUploadCommandHandler(photoRepository, uploadSessionRepository, eventHandler);
     }
 
     @Test
@@ -68,6 +68,7 @@ class CompletePhotoUploadCommandHandlerTest {
         when(photoRepository.save(any(Photo.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
         when(uploadSessionRepository.findById(sessionId)).thenReturn(Mono.just(session));
         when(uploadSessionRepository.save(any(UploadSession.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(eventHandler.handlePhotoUploaded(any(PhotoUploadedEvent.class))).thenReturn(Mono.empty());
 
         // When
         Mono<UUID> result = handler.handle(command);
@@ -78,7 +79,7 @@ class CompletePhotoUploadCommandHandlerTest {
                 assertThat(resultId).isEqualTo(photo.getId());
                 verify(photoRepository).save(any(Photo.class));
                 verify(uploadSessionRepository).save(any(UploadSession.class));
-                verify(eventPublisher).publishEvent(any(PhotoUploadedEvent.class));
+                verify(eventHandler).handlePhotoUploaded(any(PhotoUploadedEvent.class));
             })
             .verifyComplete();
     }
@@ -104,13 +105,14 @@ class CompletePhotoUploadCommandHandlerTest {
         when(photoRepository.save(any(Photo.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
         when(uploadSessionRepository.findById(sessionId)).thenReturn(Mono.just(session));
         when(uploadSessionRepository.save(any(UploadSession.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(eventHandler.handlePhotoUploaded(any(PhotoUploadedEvent.class))).thenReturn(Mono.empty());
 
         // When
         handler.handle(command).block();
 
         // Then
         ArgumentCaptor<PhotoUploadedEvent> eventCaptor = ArgumentCaptor.forClass(PhotoUploadedEvent.class);
-        verify(eventPublisher).publishEvent(eventCaptor.capture());
+        verify(eventHandler).handlePhotoUploaded(eventCaptor.capture());
 
         PhotoUploadedEvent event = eventCaptor.getValue();
         assertThat(event.getPhotoId()).isEqualTo(photo.getId());

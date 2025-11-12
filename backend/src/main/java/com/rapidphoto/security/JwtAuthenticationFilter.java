@@ -49,9 +49,12 @@ public class JwtAuthenticationFilter implements WebFilter {
             UUID userId = UUID.fromString(claims.getSubject());
             String email = claims.get("email", String.class);
 
+            // Create UserPrincipal
+            UserPrincipal userPrincipal = new UserPrincipal(userId, email, email); // Using email as displayName for now
+
             // Create authentication object
             Authentication authentication = new UsernamePasswordAuthenticationToken(
-                userId, // Principal (user ID)
+                userPrincipal, // Principal (UserPrincipal object)
                 null, // Credentials (not needed after authentication)
                 List.of(new SimpleGrantedAuthority("ROLE_USER")) // Authorities
             );

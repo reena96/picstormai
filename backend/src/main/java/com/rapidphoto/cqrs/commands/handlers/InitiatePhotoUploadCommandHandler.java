@@ -38,15 +38,16 @@ public class InitiatePhotoUploadCommandHandler {
     public Mono<Map<String, Object>> handle(InitiatePhotoUploadCommand command) {
         UUID photoId = UUID.randomUUID();
 
-        // Create new photo
-        Photo photo = Photo.initiate(
+        // Create new photo with the SAME photoId that will be used in S3 key and returned to frontend
+        Photo photo = Photo.initiateWithId(
+            photoId,
             command.userId(),
             command.sessionId(),
             command.filename(),
             command.fileSizeBytes()
         );
 
-        // Generate pre-signed URL
+        // Generate pre-signed URL using the SAME photoId
         Map<String, Object> presignedUrlData = s3Service.generatePresignedUploadUrl(
             command.userId(),
             command.sessionId(),
@@ -56,7 +57,7 @@ public class InitiatePhotoUploadCommandHandler {
             command.mimeType()
         );
 
-        // Save photo
+        // Save photo (will have same photoId as returned to frontend)
         return photoRepository.save(photo)
             .thenReturn(presignedUrlData);
     }

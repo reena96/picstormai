@@ -23,7 +23,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useSSE } from '../hooks/useSSE';
 import { Button } from '../components/atoms/Button';
 import { UploadCompletionModal } from '../components/molecules/UploadCompletionModal';
-import { Upload, X, AlertCircle, Wifi, WifiOff } from 'lucide-react-native';
+import { Upload, X, AlertCircle, Wifi, WifiOff, ArrowLeft } from 'lucide-react-native';
 import {
   SelectedPhoto,
   validatePhoto,
@@ -314,8 +314,8 @@ export const UploadScreen: React.FC = () => {
   const handleViewPhotos = useCallback(() => {
     setCompletionModalVisible(false);
     // @ts-ignore - Navigation type inference
-    navigation.navigate('Gallery');
-  }, [navigation]);
+    navigation.navigate('Gallery', { highlightSessionId: currentSessionId });
+  }, [navigation, currentSessionId]);
 
   const handleRetryFailed = useCallback(() => {
     setCompletionModalVisible(false);
@@ -368,8 +368,43 @@ export const UploadScreen: React.FC = () => {
           // Fallback: If SSE doesn't send SESSION_COMPLETED within 2 seconds, handle completion locally
           const fallbackTimer = setTimeout(() => {
             console.warn('[UploadScreen] SSE SESSION_COMPLETED not received, using local fallback');
+
+            // Count completion stats from local upload progress state
+            let uploadedCount = 0;
+            let failedCount = 0;
+
+            // Check if we have progress data from SSE
+            if (uploadProgress.size > 0) {
+              uploadProgress.forEach((progress) => {
+                if (progress.status === 'completed') {
+                  uploadedCount++;
+                } else if (progress.status === 'failed') {
+                  failedCount++;
+                }
+              });
+            } else {
+              // No SSE progress updates received - assume all succeeded
+              // since the local callback only fires when uploads complete
+              console.log('[UploadScreen] No SSE progress data, assuming all uploads succeeded');
+              uploadedCount = selectedPhotos.length;
+              failedCount = 0;
+            }
+
+            // Show completion modal with stats
+            const stats: SessionCompletedMessage = {
+              type: 'SESSION_COMPLETED',
+              sessionId: sessionId,
+              totalCount: selectedPhotos.length,
+              uploadedCount,
+              failedCount,
+              timestamp: new Date().toISOString(),
+            };
+
+            console.log('[UploadScreen] Fallback stats:', stats);
+            setCompletionStats(stats);
+            setCompletionModalVisible(true);
             setIsUploading(false);
-            // Don't show completion modal here - SSE should handle it, or user can navigate away
+            setCurrentSessionId(null);
           }, 2000);
 
           // Store timer so we can clear it if SSE message arrives
@@ -402,6 +437,8 @@ export const UploadScreen: React.FC = () => {
   const styles = StyleSheet.create<{
     container: ViewStyle;
     header: ViewStyle;
+    headerTop: ViewStyle;
+    backButton: ViewStyle;
     title: TextStyle;
     subtitle: TextStyle;
     connectionBanner: ViewStyle;
@@ -439,12 +476,21 @@ export const UploadScreen: React.FC = () => {
       borderBottomWidth: 1,
       borderBottomColor: theme.colors.border,
     },
+    headerTop: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: theme.spacing[2],
+    },
+    backButton: {
+      padding: theme.spacing[2],
+      marginRight: theme.spacing[2],
+      marginLeft: -theme.spacing[2],
+    },
     title: {
       fontSize: theme.typography.fontSize['2xl'],
       fontWeight: theme.typography.fontWeight.bold as TextStyle['fontWeight'],
       color: theme.colors.text.primary,
       fontFamily: theme.typography.fontFamily.primary,
-      marginBottom: theme.spacing[1],
     },
     subtitle: {
       fontSize: theme.typography.fontSize.sm,
@@ -601,7 +647,16 @@ export const UploadScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Upload Photos</Text>
+        <View style={styles.headerTop}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Home' as never)}
+            style={styles.backButton}
+            accessibilityLabel="Back to Home"
+          >
+            <ArrowLeft size={24} color={theme.text} />
+          </TouchableOpacity>
+          <Text style={styles.title}>Upload Photos</Text>
+        </View>
         <Text style={styles.subtitle}>
           Select up to {MAX_PHOTOS_PER_UPLOAD} photos (max {MAX_FILE_SIZE_MB}MB each)
         </Text>

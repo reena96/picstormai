@@ -1,0 +1,24 @@
+I'm continuing from Epic 3 Session 6. The backend cannot start due to PostgreSQL authentication issues.
+
+Current state:
+- Frontend running on 8081
+- PostgreSQL running with MD5 auth configured and password set
+- Backend fails with "password authentication failed for user rapidphoto_admin"
+- Password verification from inside container works, but JDBC connection fails
+- Presigned URL code changes are implemented but can't be tested
+
+Options:
+1. Nuclear rebuild with init script (RECOMMENDED - guarantees clean state)
+2. Use trust authentication for local dev (SIMPLE - works immediately)
+3. Debug JDBC connection pool (COMPLEX - investigate caching issues)
+
+Please implement Option 1 (nuclear rebuild) to get the backend running so we can test the photo display fix.
+
+Steps for Option 1:
+1. Create init-scripts/01-init.sql with password setup
+2. Update docker-compose.yml to mount init script
+3. Run: docker compose down -v && docker compose up -d
+4. Start backend and verify it connects
+5. Test photo display with presigned URLs
+
+See EPIC-3-SESSION-6-HANDOFF.md for full context.

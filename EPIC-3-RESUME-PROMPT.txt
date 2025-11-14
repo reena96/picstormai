@@ -1,0 +1,24 @@
+Continue Epic 3 orchestration from Story 3.2.
+
+Story 3.1 (Photo Gallery UI) is complete and approved - see stories/3-1-photo-gallery-ui.md
+
+Read EPIC-3-SESSION-2-HANDOFF.md for full context.
+
+Use orchestrator.md to continue the BMAD cycle:
+1. @sm-scrum: Create/finalize Story 3.2 (Photo Viewing - Lightbox)
+2. @dev: Implement lightbox component with zoom, navigation, keyboard controls
+3. @qa-quality: Review and approve
+4. Continue through stories 3.3-3.7 until Epic 3 complete
+
+Current status:
+- Epic 3 Progress: 1/7 stories done (14%)
+- Story 3.1: ✅ DONE (photo gallery with infinite scroll, sorting, tests passing)
+- Story 3.2: ⏳ NEXT (lightbox/modal viewer)
+- Backend running on 8080, Frontend on 8081
+- All infrastructure ready, tests passing
+
+Epic document: docs/epics/epic-3-photo-gallery-viewing-tagging-download.md
+Orchestration log: docs/orchestration-flow.md
+Branch: epic-3-photo-gallery-viewing-tagging-download
+
+Start Story 3.2 now - follow the BMAD cycle automatically until Epic 3 complete.

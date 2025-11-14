@@ -14,3 +14,6 @@ export type { SettingsPanelProps, UserSettings } from './SettingsPanel';
 
 export { Lightbox } from './Lightbox';
 export type { LightboxProps, Photo } from './Lightbox';
+
+export { TagFilterBar } from './TagFilterBar';
+export type { TagFilterBarProps, Tag } from './TagFilterBar';

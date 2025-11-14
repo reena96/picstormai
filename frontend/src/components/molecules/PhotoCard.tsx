@@ -1,6 +1,7 @@
 /**
  * PhotoCard Component (Molecule)
  * 1:1 aspect ratio photo card with hover overlay, metadata, and loading state
+ * Story 3.6: Added selection mode with checkbox overlay
  * Accessible with keyboard navigation and screen reader support
  */
 
@@ -9,6 +10,7 @@ import { View, Image, Pressable, StyleSheet, ViewStyle, ImageStyle, Platform } f
 import { useTheme } from '../../hooks/useTheme';
 import { Text } from '../atoms/Text';
 import { Spinner } from '../atoms/Spinner';
+import { Check } from 'lucide-react-native';
 
 export interface PhotoCardProps {
   photoUrl: string;
@@ -21,6 +23,9 @@ export interface PhotoCardProps {
   loading?: boolean;
   testID?: string;
   style?: ViewStyle;
+  // Story 3.6: Selection mode props
+  isSelectionMode?: boolean;
+  isSelected?: boolean;
 }
 
 export const PhotoCard: React.FC<PhotoCardProps> = ({
@@ -34,6 +39,8 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({
   loading = false,
   testID,
   style,
+  isSelectionMode = false,
+  isSelected = false,
 }) => {
   const { theme } = useTheme();
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -45,6 +52,11 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({
     overflow: 'hidden',
     backgroundColor: theme.colors.surface,
     ...theme.shadows.sm,
+    // Story 3.6: Selected state border
+    ...(isSelected && {
+      borderWidth: 3,
+      borderColor: (typeof theme.colors.primary === 'string' ? theme.colors.primary : '#007AFF'),
+    }),
   };
 
   const imageStyle: ImageStyle = {
@@ -98,13 +110,31 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  const checkboxOverlayStyle: ViewStyle = {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    zIndex: 10,
+  };
+
+  const checkboxStyle: ViewStyle = {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: isSelected ? (typeof theme.colors.primary === 'string' ? theme.colors.primary : '#007AFF') : 'rgba(0, 0, 0, 0.3)',
+    borderWidth: 2,
+    borderColor: isSelected ? (typeof theme.colors.primary === 'string' ? theme.colors.primary : '#007AFF') : '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
   return (
     <Pressable
       onPress={onPress}
       onHoverIn={() => setIsHovered(true)}
       onHoverOut={() => setIsHovered(false)}
       accessibilityRole="button"
-      accessibilityLabel={`Photo: ${filename}, uploaded ${formatDate(uploadDate)}`}
+      accessibilityLabel={`Photo: ${filename}, uploaded ${formatDate(uploadDate)}${isSelected ? ', selected' : ''}`}
       testID={testID}
       style={({ pressed }) => [
         containerStyle,
@@ -127,12 +157,25 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({
         </View>
       )}
 
-      {/* Hover overlay (web only) */}
-      <View style={overlayStyle} pointerEvents="none">
-        <Text variant="body" color={theme.colors.white}>
-          View Photo
-        </Text>
-      </View>
+      {/* Story 3.6: Selection checkbox overlay */}
+      {isSelectionMode && (
+        <View style={checkboxOverlayStyle} pointerEvents="none">
+          <View style={checkboxStyle} testID="photo-card-checkbox">
+            {isSelected && (
+              <Check size={16} color="#FFFFFF" />
+            )}
+          </View>
+        </View>
+      )}
+
+      {/* Hover overlay (web only) - hide in selection mode */}
+      {!isSelectionMode && (
+        <View style={overlayStyle} pointerEvents="none">
+          <Text variant="body" color={theme.colors.white}>
+            View Photo
+          </Text>
+        </View>
+      )}
 
       {/* Metadata footer */}
       {imageLoaded && !loading && (

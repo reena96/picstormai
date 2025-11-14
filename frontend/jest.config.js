@@ -8,6 +8,8 @@ module.exports = {
     '^react-native$': 'react-native-web',
     // Mock React Native built-ins that we don't need for web testing
     '^react-native/Libraries/(.*)$': '<rootDir>/node_modules/react-native-web/dist/$1',
+    // Mock react-native Modal to prevent rendering issues
+    '^react-native/Libraries/Modal/Modal$': '<rootDir>/__mocks__/Modal.js',
   },
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',

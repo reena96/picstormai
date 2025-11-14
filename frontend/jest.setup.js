@@ -1,5 +1,23 @@
 // Jest setup file for React Native Web testing
 
+// Fix for react-native-web + @testing-library/react-native compatibility issue
+// This prevents "parentInstance.children.indexOf is not a function" error
+if (typeof global.document !== 'undefined') {
+  const originalCreateElement = document.createElement.bind(document);
+  document.createElement = function (tagName, options) {
+    const element = originalCreateElement(tagName, options);
+    if (!element.children || typeof element.children === 'string') {
+      Object.defineProperty(element, 'children', {
+        get: function () {
+          return Array.from(this.childNodes).filter(node => node.nodeType === 1);
+        },
+        configurable: true,
+      });
+    }
+    return element;
+  };
+}
+
 // Mock lucide-react-native icons
 jest.mock('lucide-react-native', () => {
   const React = require('react');

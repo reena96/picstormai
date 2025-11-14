@@ -20,3 +20,6 @@ export type { BadgeProps } from './Badge';
 
 export { Spinner } from './Spinner';
 export type { SpinnerProps } from './Spinner';
+
+export { Select } from './Select';
+export type { SelectProps, SelectOption } from './Select';

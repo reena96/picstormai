@@ -1,12 +1,18 @@
 package com.rapidphoto.infrastructure;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -17,13 +23,16 @@ import java.util.UUID;
 /**
  * Service for S3 operations including pre-signed URL generation.
  * Story 2.3: S3 Pre-Signed URL Generation
+ * Story 3.5: Individual Photo Download (added presigned GET URLs)
  */
 @Service
 public class S3Service {
 
+    private static final Logger log = LoggerFactory.getLogger(S3Service.class);
     private static final long MULTIPART_THRESHOLD = 5 * 1024 * 1024; // 5MB
     private static final long PART_SIZE = 5 * 1024 * 1024; // 5MB per part
     private static final Duration PRESIGNED_URL_DURATION = Duration.ofMinutes(15);
+    private static final Duration DOWNLOAD_URL_DURATION = Duration.ofMinutes(5); // 5 minutes for downloads
 
     private final S3Presigner s3Presigner;
     private final String bucketName;
@@ -70,6 +79,8 @@ public class S3Service {
      * Generate single pre-signed PUT URL.
      */
     private String generateSingleUploadUrl(String s3Key, String mimeType) {
+        log.info("Generating presigned upload URL for bucket: {}, key: {}, mimeType: {}", bucketName, s3Key, mimeType);
+
         PutObjectRequest objectRequest = PutObjectRequest.builder()
             .bucket(bucketName)
             .key(s3Key)
@@ -82,7 +93,9 @@ public class S3Service {
             .build();
 
         PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
-        return presignedRequest.url().toString();
+        String url = presignedRequest.url().toString();
+        log.info("Generated presigned URL: {}", url);
+        return url;
     }
 
     /**
@@ -117,5 +130,52 @@ public class S3Service {
             "s3Key", s3Key,
             "numParts", numParts
         );
+    }
+
+    /**
+     * Generate presigned download URL for a photo.
+     * Story 3.5: Individual Photo Download
+     *
+     * @param s3Key S3 object key
+     * @param originalFilename Original filename for Content-Disposition header
+     * @param expiration URL expiration duration
+     * @return Presigned GET URL
+     */
+    public String generatePresignedDownloadUrl(String s3Key, String originalFilename, Duration expiration) {
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+            .bucket(bucketName)
+            .key(s3Key)
+            .responseContentDisposition("attachment; filename=\"" + originalFilename + "\"")
+            .build();
+
+        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+            .signatureDuration(expiration)
+            .getObjectRequest(getObjectRequest)
+            .build();
+
+        PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
+        return presignedRequest.url().toString();
+    }
+
+    /**
+     * Generate presigned URL for viewing/displaying photo (inline, not download).
+     * Used for gallery views and lightbox.
+     */
+    public Mono<String> generatePresignedViewUrl(String s3Key, Duration expiration) {
+        return Mono.fromCallable(() -> {
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(s3Key)
+                // No Content-Disposition header - browser will display inline
+                .build();
+
+            GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                .signatureDuration(expiration)
+                .getObjectRequest(getObjectRequest)
+                .build();
+
+            PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
+            return presignedRequest.url().toString();
+        });
     }
 }

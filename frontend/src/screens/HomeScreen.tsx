@@ -72,6 +72,14 @@ export const HomeScreen: React.FC = () => {
         <View style={styles.buttonContainer}>
           <Button
             variant="primary"
+            onPress={() => navigation.navigate('Gallery' as never)}
+            testID="gallery-button"
+            style={styles.button}
+          >
+            View Gallery
+          </Button>
+          <Button
+            variant="primary"
             onPress={() => navigation.navigate('Upload' as never)}
             testID="upload-button"
             style={styles.button}

@@ -135,11 +135,19 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
+                console.log('Next button pressed, currentIndex:', currentIndex);
                 if (currentIndex < onboardingData.length - 1) {
-                  flatListRef.current?.scrollToIndex({
-                    index: currentIndex + 1,
+                  const nextIndex = currentIndex + 1;
+                  console.log('Scrolling to index:', nextIndex);
+
+                  // Use scrollToOffset for better web compatibility
+                  flatListRef.current?.scrollToOffset({
+                    offset: nextIndex * SCREEN_WIDTH,
                     animated: true,
                   });
+
+                  // Also update state immediately for better UX
+                  setCurrentIndex(nextIndex);
                 }
               }}
               style={styles.nextButton}

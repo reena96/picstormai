@@ -1,0 +1,38 @@
+EPIC 3 - SESSION 8 RESUME PROMPT
+================================
+
+Read the handoff document: EPIC-3-SESSION-7-HANDOFF.md
+
+CRITICAL ISSUE TO RESOLVE FIRST:
+Photos are not appearing in the Gallery after upload. The user uploads photos, clicks "View Photos", but sees "No photos yet" instead of the uploaded photos.
+
+INVESTIGATION NEEDED:
+1. Check browser DevTools console for errors during upload
+2. Check Network tab for failed API calls
+3. Verify LocalStack (S3) is running: docker ps | grep localstack
+4. Check backend logs during upload attempt
+5. Query database to see if photos are being created
+
+SESSION 7 COMPLETED FEATURES:
+✅ Batch photo delete with confirmation dialog
+✅ Select All / Deselect All functionality
+✅ Download button visibility fix (explicit blue color)
+✅ Photo highlighting after upload (blue border, 5sec fade)
+
+CURRENT STATE:
+- Backend running on port 8080
+- Frontend running on port 8081
+- Delete functionality working
+- Highlighting implemented but can't test due to photo visibility issue
+
+START HERE:
+Ask the user to:
+1. Open browser at http://localhost:8081
+2. Open DevTools (F12) → Console tab
+3. Try uploading a photo
+4. Share any errors from the console
+5. Check Network tab for failed requests
+
+Then debug the upload flow based on the errors found.
+
+See EPIC-3-SESSION-7-HANDOFF.md for complete context, code references, and detailed investigation steps.

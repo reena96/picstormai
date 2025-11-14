@@ -11,7 +11,7 @@ export const userService = {
    * Get current user preferences
    */
   async getPreferences(): Promise<UserPreferences> {
-    const response = await apiService.getInstance().get<UserPreferences>('/api/user/preferences');
+    const response = await apiService.getInstance().get<UserPreferences>('/user/preferences');
     return response.data;
   },
 
@@ -20,7 +20,7 @@ export const userService = {
    */
   async updatePreferences(preferences: UpdateUserPreferencesRequest): Promise<UserPreferences> {
     const response = await apiService.getInstance().put<UserPreferences>(
-      '/api/user/preferences',
+      '/user/preferences',
       preferences
     );
     return response.data;

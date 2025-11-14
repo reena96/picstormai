@@ -7,5 +7,6 @@ import java.util.UUID;
  */
 public record RemoveTagFromPhotoCommand(
     UUID photoId,
-    UUID tagId
+    UUID tagId,
+    UUID userId
 ) {}

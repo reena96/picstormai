@@ -78,6 +78,27 @@ public class Photo implements Persistable<UUID> {
     }
 
     /**
+     * Factory method to initiate new photo upload with specified ID.
+     * Used when photoId needs to match presigned URL generation.
+     */
+    public static Photo initiateWithId(UUID photoId, UUID userId, UUID sessionId, String filename, long fileSize) {
+        if (photoId == null) {
+            throw new IllegalArgumentException("Photo ID cannot be null");
+        }
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+        if (filename == null || filename.trim().isEmpty()) {
+            throw new IllegalArgumentException("Filename cannot be empty");
+        }
+        if (fileSize <= 0) {
+            throw new IllegalArgumentException("File size must be positive");
+        }
+
+        return new Photo(photoId, userId, sessionId, filename.trim(), fileSize);
+    }
+
+    /**
      * Start upload with S3 location.
      */
     public void startUpload(S3Location location) {

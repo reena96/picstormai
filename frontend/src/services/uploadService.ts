@@ -134,6 +134,23 @@ class UploadService {
         // Mark as completed
         this.updatePhotoProgress(sessionId, photo.id, 'completed', 100);
 
+        // Notify backend that photo was uploaded to S3
+        try {
+          const photoId = initiateResponse.data.photoId;
+          const s3Key = initiateResponse.data.s3Key;
+          await axios.post(
+            `${apiBaseUrl}/api/photos/${photoId}/uploaded`,
+            { s3Key },
+            {
+              headers: { Authorization: `Bearer ${authToken}` },
+            }
+          );
+          console.log(`Successfully notified backend that photo ${photoId} was uploaded`);
+        } catch (notifyError: any) {
+          console.error('Failed to notify backend of upload completion:', notifyError);
+          // Don't fail the upload - photo is in S3, we can manually mark it later
+        }
+
         // Check if all photos completed
         this.checkSessionComplete(sessionId);
       } catch (error: any) {

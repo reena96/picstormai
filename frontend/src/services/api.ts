@@ -15,7 +15,7 @@ export const STORAGE_KEYS = {
 
 // API base URL - defaults to localhost for development
 // @ts-ignore - process.env is provided by webpack
-const API_BASE_URL = (typeof process !== 'undefined' && process.env?.REACT_APP_API_URL) || 'http://localhost:8080';
+const API_BASE_URL = (typeof process !== 'undefined' && process.env?.REACT_APP_API_URL) || 'http://localhost:8080/api';
 
 class ApiService {
   private axiosInstance: AxiosInstance;
@@ -41,10 +41,24 @@ class ApiService {
     // Request interceptor: attach access token
     this.axiosInstance.interceptors.request.use(
       async (config: InternalAxiosRequestConfig) => {
-        const token = await storage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-        if (token && config.headers) {
-          config.headers.Authorization = `Bearer ${token}`;
+        // Skip auth for login and public endpoints
+        const isPublicEndpoint = config.url?.includes('/auth/login') ||
+                                 config.url?.includes('/auth/register');
+
+        if (!isPublicEndpoint) {
+          const token = await storage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+
+          if (!token) {
+            // No token available - reject request to prevent 401 errors
+            console.warn('API request blocked: No authentication token available');
+            return Promise.reject(new Error('Authentication required'));
+          }
+
+          if (config.headers) {
+            config.headers.Authorization = `Bearer ${token}`;
+          }
         }
+
         return config;
       },
       (error) => Promise.reject(error)
@@ -116,7 +130,7 @@ class ApiService {
     }
 
     const response = await axios.post<RefreshTokenResponse>(
-      `${API_BASE_URL}/api/auth/refresh`,
+      `${API_BASE_URL}/auth/refresh`,
       { refreshToken }
     );
 
@@ -138,7 +152,7 @@ class ApiService {
 
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     const response = await this.axiosInstance.post<LoginResponse>(
-      '/api/auth/login',
+      '/auth/login',
       credentials
     );
     return response.data;
@@ -159,12 +173,12 @@ class ApiService {
   }
 
   async getUserProfile(): Promise<User> {
-    const response = await this.axiosInstance.get<User>('/api/user/profile');
+    const response = await this.axiosInstance.get<User>('/user/profile');
     return response.data;
   }
 
   async markOnboardingComplete(): Promise<User> {
-    const response = await this.axiosInstance.patch<User>('/api/user/onboarding');
+    const response = await this.axiosInstance.patch<User>('/user/onboarding');
     return response.data;
   }
 

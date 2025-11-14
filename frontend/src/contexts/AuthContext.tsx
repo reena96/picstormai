@@ -26,32 +26,49 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Check for stored tokens on mount
   useEffect(() => {
-    checkAuthStatus();
-  }, []);
+    let mounted = true;
 
-  const checkAuthStatus = async () => {
-    try {
-      console.log('AuthContext: Starting checkAuthStatus');
-      const accessToken = await storage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-      console.log('AuthContext: Access token exists:', !!accessToken);
+    const checkAuthStatus = async () => {
+      try {
+        console.log('AuthContext: Starting checkAuthStatus');
 
-      if (accessToken) {
-        // Token exists, fetch user profile to validate it
-        try {
-          console.log('AuthContext: Fetching user profile');
-          const user = await apiService.getUserProfile();
-          console.log('AuthContext: User profile fetched successfully');
-          setAuthState({
-            user,
-            isAuthenticated: true,
-            isLoading: false,
-            error: null,
-          });
-        } catch (error) {
-          // If profile fetch fails (invalid/expired token), clear tokens and log out
-          console.log('AuthContext: Token validation failed, clearing stored tokens', error);
-          await storage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-          await storage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+        const accessToken = await storage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+        console.log('AuthContext: Access token exists:', !!accessToken);
+
+        if (!mounted) return;
+
+        if (accessToken) {
+          // Token exists, fetch user profile to validate it
+          try {
+            console.log('AuthContext: Fetching user profile');
+            const user = await apiService.getUserProfile();
+            console.log('AuthContext: User profile fetched successfully');
+
+            if (!mounted) return;
+
+            setAuthState({
+              user,
+              isAuthenticated: true,
+              isLoading: false,
+              error: null,
+            });
+          } catch (error) {
+            // If profile fetch fails (invalid/expired token), clear tokens and log out
+            console.log('AuthContext: Token validation failed, clearing stored tokens', error);
+            await storage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+            await storage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+
+            if (!mounted) return;
+
+            setAuthState({
+              user: null,
+              isAuthenticated: false,
+              isLoading: false,
+              error: null,
+            });
+          }
+        } else {
+          console.log('AuthContext: No access token, setting unauthenticated state');
           setAuthState({
             user: null,
             isAuthenticated: false,
@@ -59,22 +76,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             error: null,
           });
         }
-      } else {
-        console.log('AuthContext: No access token, setting unauthenticated state');
+      } catch (error) {
+        console.error('AuthContext: Caught error in checkAuthStatus:', error);
+
+        if (!mounted) return;
+
         setAuthState({
-          ...initialAuthState,
+          user: null,
+          isAuthenticated: false,
           isLoading: false,
+          error: 'Failed to check authentication status',
         });
       }
-    } catch (error) {
-      console.error('AuthContext: Caught error in checkAuthStatus:', error);
-      setAuthState({
-        ...initialAuthState,
-        isLoading: false,
-        error: 'Failed to check authentication status',
-      });
-    }
-  };
+    };
+
+    checkAuthStatus();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const login = async (email: string, password: string): Promise<void> => {
     try {

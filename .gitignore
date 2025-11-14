@@ -29,6 +29,8 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+.env.production
+*.env.production
 
 # Temporary Files
 *.tmp
@@ -56,3 +58,17 @@ secrets.yaml
 v4-backup/
 QUICK-RESUME.md
 bmad/
+
+# Deployment secrets
+deployment/.env
+deployment/.jwt-secret
+backend/.jwt-secret
+*.jwt-secret
+
+# Session-specific handoff notes (temporary, not for repo)
+DEPLOYMENT-STATUS.md
+NEXT-SESSION-HANDOFF.md
+SESSION-HANDOFF-*.md
+deployment/DEPLOYMENT-GUIDE.md
+deployment/DEPLOYMENT-SESSION-HANDOFF.md
+deployment/DEPLOYMENT-SUMMARY.md

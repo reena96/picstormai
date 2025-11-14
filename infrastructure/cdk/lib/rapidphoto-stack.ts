@@ -208,10 +208,10 @@ export class RapidPhotoStack extends cdk.Stack {
       healthCheck: {
         enabled: true,
         path: '/actuator/health',
-        interval: cdk.Duration.seconds(30),
-        timeout: cdk.Duration.seconds(5),
+        interval: cdk.Duration.seconds(60), // Increased interval to reduce checks during startup
+        timeout: cdk.Duration.seconds(10), // Increased timeout for slow responses during startup
         healthyThresholdCount: 2,
-        unhealthyThresholdCount: 3,
+        unhealthyThresholdCount: 5, // More lenient - allow more failures before marking unhealthy
         healthyHttpCodes: '200',
       },
       deregistrationDelay: cdk.Duration.seconds(30),
@@ -240,6 +240,15 @@ export class RapidPhotoStack extends cdk.Stack {
 
     // Grant read access to DB secret
     dbSecret.grantRead(ec2Role);
+
+    // Grant access to deployment bucket (for downloading JAR files during deployment)
+    ec2Role.addToPolicy(new iam.PolicyStatement({
+      actions: ['s3:GetObject', 's3:ListBucket'],
+      resources: [
+        `arn:aws:s3:::rapidphoto-deployments-${this.account}`,
+        `arn:aws:s3:::rapidphoto-deployments-${this.account}/*`,
+      ],
+    }));
 
     // Security group for EC2 instances
     const ec2SecurityGroup = new ec2.SecurityGroup(this, 'EC2SecurityGroup', {
@@ -275,6 +284,10 @@ export class RapidPhotoStack extends cdk.Stack {
       '#!/bin/bash',
       'set -e',
       '',
+      '# Enable and start SSM agent (required for remote access)',
+      'systemctl enable amazon-ssm-agent',
+      'systemctl start amazon-ssm-agent',
+      '',
       '# Update system',
       'yum update -y',
       '',
@@ -289,8 +302,20 @@ export class RapidPhotoStack extends cdk.Stack {
       'mkdir -p /opt/rapidphoto',
       'cd /opt/rapidphoto',
       '',
-      '# TODO: Download Spring Boot JAR from S3 or artifact repository',
-      '# aws s3 cp s3://your-artifacts-bucket/rapidphoto-backend.jar /opt/rapidphoto/app.jar',
+      '# Download and deploy latest JAR from S3',
+      `aws s3 cp s3://rapidphoto-deployments-${this.account}/latest/rapidphoto-backend.jar /opt/rapidphoto/app.jar || exit 1`,
+      '',
+      '# Fetch database password from Secrets Manager',
+      'DB_SECRET=$(aws secretsmanager get-secret-value \\',
+      `  --secret-id ${dbSecret.secretArn} \\`,
+      `  --region ${this.region} \\`,
+      '  --query SecretString --output text)',
+      'DB_USERNAME=$(echo $DB_SECRET | jq -r .username)',
+      'DB_PASSWORD=$(echo $DB_SECRET | jq -r .password)',
+      '',
+      '# Generate JWT secret',
+      'JWT_SECRET=$(openssl rand -base64 32)',
+      'echo $JWT_SECRET > /opt/rapidphoto/.jwt-secret',
       '',
       '# Environment variables for Spring Boot',
       `export SPRING_PROFILES_ACTIVE=${environment}`,
@@ -319,7 +344,9 @@ export class RapidPhotoStack extends cdk.Stack {
       `Environment="DB_HOST=${database.dbInstanceEndpointAddress}"`,
       'Environment="DB_PORT=5432"',
       'Environment="DB_NAME=rapidphoto"',
-      `Environment="DB_SECRET_ARN=${dbSecret.secretArn}"`,
+      'Environment="DB_USERNAME=${DB_USERNAME}"',
+      'Environment="DB_PASSWORD=${DB_PASSWORD}"',
+      'Environment="JWT_SECRET=${JWT_SECRET}"',
       `Environment="REDIS_HOST=${redisCluster.attrRedisEndpointAddress}"`,
       'Environment="REDIS_PORT=6379"',
       `Environment="S3_BUCKET=${photoBucket.bucketName}"`,
@@ -332,11 +359,13 @@ export class RapidPhotoStack extends cdk.Stack {
       'WantedBy=multi-user.target',
       'EOF',
       '',
-      '# Note: Service will fail until you deploy the Spring Boot JAR',
-      '# Enable and start service (commented out until JAR is deployed)',
-      '# systemctl daemon-reload',
-      '# systemctl enable rapidphoto',
-      '# systemctl start rapidphoto',
+      '# Enable and start service',
+      'systemctl daemon-reload',
+      'systemctl enable rapidphoto',
+      'systemctl start rapidphoto',
+      '',
+      '# Wait for application to be ready',
+      'sleep 30',
       '',
       '# Instance is ready - no signal needed',
       'echo "Instance setup complete"',
@@ -361,7 +390,7 @@ export class RapidPhotoStack extends cdk.Stack {
       securityGroup: ec2SecurityGroup,
       userData,
       healthCheck: autoscaling.HealthCheck.elb({
-        grace: cdk.Duration.minutes(5),
+        grace: cdk.Duration.minutes(10), // Increased to allow time for deployment and Spring Boot startup
       }),
       // Removed signals - instances will launch without needing to report success
       // This allows infrastructure to deploy before Spring Boot app is ready

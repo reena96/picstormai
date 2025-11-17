@@ -1,6 +1,7 @@
 package com.rapidphoto.config;
 
 import com.rapidphoto.security.JwtAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
@@ -20,6 +21,9 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Value("${cors.allowed-origins:http://localhost:8081}")
+    private String allowedOrigins;
+
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
@@ -33,7 +37,9 @@ public class SecurityConfig {
             // Enable CORS
             .cors(cors -> cors.configurationSource(request -> {
                 var corsConfig = new org.springframework.web.cors.CorsConfiguration();
-                corsConfig.addAllowedOrigin("http://localhost:8081");
+                for (String origin : allowedOrigins.split(",")) {
+                    corsConfig.addAllowedOrigin(origin.trim());
+                }
                 corsConfig.addAllowedMethod("*");
                 corsConfig.addAllowedHeader("*");
                 corsConfig.setAllowCredentials(true);

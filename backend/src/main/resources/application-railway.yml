@@ -59,3 +59,7 @@ logging:
   level:
     root: INFO
     com.rapidphoto: INFO
+
+# CORS Configuration
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:https://*.up.railway.app,http://localhost:8081}

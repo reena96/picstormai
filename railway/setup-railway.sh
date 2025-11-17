@@ -14,9 +14,13 @@ fi
 echo "✅ Railway CLI installed"
 echo ""
 
-# Login to Railway
-echo "🔐 Logging into Railway..."
-railway login
+# Check if logged in to Railway
+if railway whoami &> /dev/null; then
+    echo "✅ Already logged into Railway ($(railway whoami))"
+else
+    echo "🔐 Logging into Railway..."
+    railway login
+fi
 echo ""
 
 # Create new project

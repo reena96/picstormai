@@ -31,18 +31,17 @@ Follow the prompts to enter:
 
 ### Step 3: Setup GitHub Actions (2 minutes)
 
-Generate Railway token:
-
-```bash
-railway login
-railway token
-```
+Generate Railway token via Dashboard:
+1. Go to: https://railway.app/account/tokens
+2. Click "Create Token"
+3. Give it a name (e.g., "GitHub Actions")
+4. Copy the token
 
 Add token to GitHub:
-1. Go to: https://github.com/YOUR_USERNAME/picstormai/settings/secrets/actions
+1. Go to: https://github.com/reena96/picstormai/settings/secrets/actions
 2. Click "New repository secret"
 3. Name: `RAILWAY_TOKEN`
-4. Value: (paste token)
+4. Value: (paste the token from Railway)
 
 ### Step 4: Deploy (1 minute)
 

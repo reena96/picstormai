@@ -4,11 +4,11 @@
 
 Add `RAILWAY_TOKEN` to GitHub repository secrets:
 
-1. Generate Railway token:
-   ```bash
-   railway login
-   railway token
-   ```
+1. Generate Railway token via Dashboard:
+   - Go to: https://railway.app/account/tokens
+   - Click "Create Token"
+   - Give it a name (e.g., "GitHub Actions")
+   - Copy the generated token
 
 2. Add to GitHub:
    - Go to repository Settings → Secrets → Actions

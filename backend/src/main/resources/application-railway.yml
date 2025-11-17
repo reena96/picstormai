@@ -1,0 +1,61 @@
+spring:
+  application:
+    name: picstormai-backend
+
+  # R2DBC Configuration - Railway PostgreSQL
+  r2dbc:
+    url: r2dbc:postgresql://${PGHOST}:${PGPORT:5432}/${PGDATABASE}
+    username: ${PGUSER}
+    password: ${PGPASSWORD}
+    pool:
+      initial-size: 5
+      max-size: 10
+
+  # Flyway Configuration - Railway PostgreSQL
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+    url: jdbc:postgresql://${PGHOST}:${PGPORT:5432}/${PGDATABASE}?sslmode=require
+    user: ${PGUSER}
+    password: ${PGPASSWORD}
+
+  # Redis Configuration - Railway Redis
+  data:
+    redis:
+      url: ${REDIS_URL}
+      timeout: 2000ms
+
+# AWS S3 Configuration (remains on AWS)
+aws:
+  s3:
+    region: ${AWS_REGION:us-east-1}
+    bucket-name: ${S3_BUCKET_NAME}
+    thumbnail-bucket-name: ${S3_THUMBNAIL_BUCKET_NAME}
+  accessKeyId: ${AWS_ACCESS_KEY_ID}
+  secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration-minutes: 15
+  refresh-token-expiration-days: 30
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+server:
+  port: ${PORT:8080}
+
+logging:
+  level:
+    root: INFO
+    com.rapidphoto: INFO
